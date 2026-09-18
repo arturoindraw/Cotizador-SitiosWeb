@@ -351,7 +351,7 @@
             <span class="label" data-t="sliderLabel">Nivel dentro del rango</span>
             <span class="value" id="sliderValue"></span>
           </div>
-          <input type="range" id="pctSlider" min="0" max="100" value="40">
+          <input type="range" id="pctSlider" min="0" max="100" value="0">
           <div class="range-labels"><span id="rangeMin"></span><span id="rangeMax"></span></div>
         </div>
       </section>
@@ -595,11 +595,11 @@ let state = {
   theme: null,
   country: "co",
   currency: "COP",
-  segment: "pyme",
-  productId: "corppro",
-  pct: 40,
+  segment: "particular",
+  productId: "landing",
+  pct: 0,
   extras: new Set(),
-  maintenanceId: "profesional",
+  maintenanceId: "none",
 };
 
 function loadPrefs(){
