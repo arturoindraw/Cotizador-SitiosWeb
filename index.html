@@ -3,438 +3,502 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cotizador de Sitios Web — Colombia &amp; Panamá</title>
+<title>Cotizador de sitios web — Colombia &amp; Panamá</title>
+
+<!-- Tema antes del primer render (evita parpadeo claro/oscuro) -->
+<script>
+(function(){
+  var theme = null;
+  try{ theme = (JSON.parse(localStorage.getItem("cotizador_prefs") || "{}") || {}).theme; }catch(e){}
+  if(theme !== "dark" && theme !== "light"){
+    try{ theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }catch(e){ theme = "light"; }
+  }
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg:#FAF8F5;
-    --bg-alt:#F1EEE8;
-    --surface:#FFFFFF;
-    --surface-2:#FBFAF8;
-    --border:#E7E2D9;
-    --text:#171512;
-    --text-muted:#6E685F;
-    --text-faint:#9A948A;
-    --black:#0E0D0C;
-    --black-2:#1C1A18;
-    --orange-1:#FF6A1A;
-    --orange-2:#FF9A3D;
-    --orange-soft:#FFF0E3;
-    --orange-soft-border:#FFD5AE;
-    --accent-grad:linear-gradient(135deg,var(--orange-1) 0%,var(--orange-2) 100%);
-    --dark-grad:linear-gradient(135deg,var(--black) 0%,#332E28 100%);
-    --shadow-sm:0 1px 2px rgba(20,16,10,.06);
-    --shadow-md:0 8px 24px rgba(20,16,10,.08);
-    --shadow-lg:0 16px 48px rgba(20,16,10,.14);
-    --radius-sm:10px;
-    --radius-md:16px;
-    --radius-lg:22px;
-    color-scheme:light;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#111011;
-      --bg-alt:#0B0A0A;
-      --surface:#1A1815;
-      --surface-2:#201E1A;
-      --border:#332F29;
-      --text:#F5F1EA;
-      --text-muted:#B3ABA0;
-      --text-faint:#847B70;
-      --orange-soft:#2B1B0F;
-      --orange-soft-border:#5A3418;
-      --shadow-sm:0 1px 2px rgba(0,0,0,.3);
-      --shadow-md:0 8px 24px rgba(0,0,0,.35);
-      --shadow-lg:0 16px 48px rgba(0,0,0,.5);
-      color-scheme:dark;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#111011;
-    --bg-alt:#0B0A0A;
-    --surface:#1A1815;
-    --surface-2:#201E1A;
-    --border:#332F29;
-    --text:#F5F1EA;
-    --text-muted:#B3ABA0;
-    --text-faint:#847B70;
-    --orange-soft:#2B1B0F;
-    --orange-soft-border:#5A3418;
-    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
-    --shadow-md:0 8px 24px rgba(0,0,0,.35);
-    --shadow-lg:0 16px 48px rgba(0,0,0,.5);
-    color-scheme:dark;
-  }
+/* =====================================================================
+   1. TOKENS
+   ===================================================================== */
+:root{
+  --bg:#FAF8F5;
+  --bg-alt:#F1EEE8;
+  --surface:#FFFFFF;
+  --surface-2:#FBFAF8;
+  --border:#E7E2D9;
+  --text:#171512;
+  --text-muted:#6E685F;
+  --text-faint:#9A948A;
+  --black:#0E0D0C;
+  --orange-1:#FF6A1A;
+  --orange-2:#FF9A3D;
+  --orange-soft:#FFF0E3;
+  --orange-soft-border:#FFD5AE;
+  --accent-grad:linear-gradient(135deg,var(--orange-1) 0%,var(--orange-2) 100%);
+  --danger:#C8372D;
+  --wa:#25D366;
+  --badge-bg:var(--black);
+  --badge-fg:#FFFFFF;
+  --btn-dark-bg:var(--black);
+  --btn-dark-border:var(--black);
+  --shadow-sm:0 1px 2px rgba(20,16,10,.06);
+  --shadow-md:0 8px 24px rgba(20,16,10,.08);
+  --radius-md:16px;
+  --radius-lg:22px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#111011;
+  --bg-alt:#0B0A0A;
+  --surface:#1A1815;
+  --surface-2:#201E1A;
+  --border:#332F29;
+  --text:#F5F1EA;
+  --text-muted:#B3ABA0;
+  --text-faint:#847B70;
+  --orange-soft:#2B1B0F;
+  --orange-soft-border:#5A3418;
+  --danger:#FF7A6B;
+  --badge-bg:var(--accent-grad);
+  --badge-fg:#1A0E00;
+  --btn-dark-bg:var(--surface-2);
+  --btn-dark-border:var(--border);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 8px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
 
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    transition:background .25s ease,color .25s ease;
-    min-height:100vh;
-  }
-  h1,h2,h3,.display{font-family:'Space Grotesk',system-ui,sans-serif;letter-spacing:-.01em;}
-  img,svg{max-width:100%;}
-  .icon{width:20px;height:20px;flex-shrink:0;}
-  .icon-lg{width:26px;height:26px;}
-  button{font-family:inherit;cursor:pointer;}
-  input{font-family:inherit;}
-  a{color:inherit;}
-  ::selection{background:var(--orange-2);color:#1a0e00;}
+/* =====================================================================
+   2. BASE
+   ===================================================================== */
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s ease,color .25s ease;
+  min-height:100vh;
+}
+h1,h2,h3{font-family:'Space Grotesk',system-ui,sans-serif;letter-spacing:-.01em;}
+img,svg{max-width:100%;}
+button,input{font-family:inherit;}
+button{cursor:pointer;color:inherit;}   /* color:inherit evita texto negro sobre fondo oscuro */
+a{color:inherit;}
+::selection{background:var(--orange-2);color:#1a0e00;}
+:focus-visible{outline:2px solid var(--orange-1);outline-offset:2px;}
+.icon{width:20px;height:20px;flex-shrink:0;}
+.icon-lg{width:26px;height:26px;}
+.no-js{padding:24px;text-align:center;font-weight:700;}
 
-  /* ---------- Layout shell ---------- */
-  .wrap{max-width:1280px;margin:0 auto;padding:0 20px 80px;}
-  header.top{
-    position:sticky;top:0;z-index:40;
-    background:color-mix(in srgb, var(--bg) 88%, transparent);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--border);
-  }
-  .top-inner{
-    max-width:1280px;margin:0 auto;padding:14px 20px;
-    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
-  }
-  .brand{display:flex;align-items:center;gap:10px;}
-  .brand-mark{
-    width:36px;height:36px;border-radius:10px;background:var(--accent-grad);
-    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Space Grotesk';
-    box-shadow:var(--shadow-sm);flex-shrink:0;
-  }
-  .brand-text .name{font-weight:700;font-size:15px;line-height:1.1;}
-  .brand-text .tag{font-size:11.5px;color:var(--text-muted);}
-  .controls-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+/* =====================================================================
+   3. HEADER + CONTROLES
+   ===================================================================== */
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px 80px;}
+header.top{
+  position:sticky;top:0;z-index:40;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.top-inner{
+  max-width:1280px;margin:0 auto;padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;background:var(--accent-grad);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Space Grotesk';
+  box-shadow:var(--shadow-sm);flex-shrink:0;
+}
+.brand-text .name{font-weight:700;font-size:15px;line-height:1.1;}
+.brand-text .tag{font-size:11.5px;color:var(--text-muted);}
+.controls-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pill-group{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px;gap:2px;}
+.pill-btn{
+  border:none;background:transparent;color:var(--text-muted);font-size:12.5px;font-weight:700;
+  padding:6px 12px;border-radius:999px;transition:all .15s ease;white-space:nowrap;
+}
+.pill-btn.active{background:var(--accent-grad);color:#fff;box-shadow:var(--shadow-sm);}
+.icon-btn{
+  width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;color:var(--text);transition:transform .15s ease;
+}
+.icon-btn:hover{transform:scale(1.06);}
+.icon-btn .icon{width:17px;height:17px;}
 
-  .pill-group{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px;gap:2px;}
-  .pill-btn{
-    border:none;background:transparent;color:var(--text-muted);font-size:12.5px;font-weight:700;
-    padding:6px 12px;border-radius:999px;transition:all .15s ease;white-space:nowrap;
-  }
-  .pill-btn.active{background:var(--accent-grad);color:#fff;box-shadow:var(--shadow-sm);}
-  .icon-btn{
-    width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);
-    display:flex;align-items:center;justify-content:center;color:var(--text);transition:transform .15s ease;
-  }
-  .icon-btn:hover{transform:scale(1.06);}
-  .icon-btn .icon{width:17px;height:17px;}
+/* =====================================================================
+   4. HERO + RECOMENDADOR
+   ===================================================================== */
+.hero{padding:44px 0 28px;}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:8px;background:var(--orange-soft);
+  border:1px solid var(--orange-soft-border);color:var(--orange-1);font-size:12.5px;font-weight:700;
+  padding:6px 12px;border-radius:999px;margin-bottom:16px;
+}
+.hero h1{font-size:clamp(28px,4.2vw,44px);line-height:1.08;margin:0 0 14px;max-width:16ch;}
+.hero h1 .grad{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero p{font-size:16px;color:var(--text-muted);max-width:56ch;line-height:1.55;margin:0;}
 
-  /* ---------- Hero ---------- */
-  .hero{padding:44px 0 28px;}
-  .hero-kicker{
-    display:inline-flex;align-items:center;gap:8px;background:var(--orange-soft);
-    border:1px solid var(--orange-soft-border);color:var(--orange-1);font-size:12.5px;font-weight:700;
-    padding:6px 12px;border-radius:999px;margin-bottom:16px;
-  }
-  .hero h1{font-size:clamp(28px,4.2vw,44px);line-height:1.08;margin:0 0 14px;max-width:16ch;}
-  .hero h1 .grad{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .hero p{font-size:16px;color:var(--text-muted);max-width:56ch;line-height:1.55;margin:0;}
+.reco{
+  padding:18px 20px;background:var(--orange-soft);
+  border:1px solid var(--orange-soft-border);border-radius:var(--radius-md);
+}
+.reco[hidden]{display:none;}
+.reco-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.reco-title{margin:0;font-size:14px;color:var(--orange-1);}
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.reco-btn{
+  border:1.5px solid var(--orange-soft-border);background:var(--surface);color:var(--text);
+  font-weight:700;font-size:12.5px;padding:10px 12px;border-radius:12px;
+  transition:border-color .15s ease, transform .12s ease;
+}
+.reco-btn:hover{border-color:var(--orange-1);transform:translateY(-1px);}
+.reco-btn.active{background:var(--accent-grad);border-color:transparent;color:#fff;}
 
-  /* ---------- Section shell ---------- */
-  .section{margin-top:40px;}
-  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
-  .section-head h2{font-size:20px;margin:0 0 4px;}
-  .section-head .sub{font-size:13.5px;color:var(--text-muted);margin:0;}
-  .step-badge{
-    display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;
-    background:var(--black);color:#fff;font-size:12px;font-weight:700;font-family:'Space Grotesk';margin-right:8px;
-  }
-  :root[data-theme="dark"] .step-badge{background:var(--accent-grad);color:#1a0e00;}
-  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .step-badge{background:var(--accent-grad);color:#1a0e00;}}
+/* =====================================================================
+   5. SECCIONES DEL FORMULARIO
+   ===================================================================== */
+.layout{display:grid;grid-template-columns:1fr;gap:32px;margin-top:8px;}
+@media (min-width:1040px){.layout{grid-template-columns:1.55fr 1fr;align-items:start;}}
 
-  /* ---------- Segment tabs ---------- */
-  .segment-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  @media (max-width:720px){.segment-grid{grid-template-columns:1fr;}}
-  .segment-card{
-    text-align:left;border:1.5px solid var(--border);background:var(--surface);border-radius:var(--radius-md);
-    padding:14px 16px;transition:border-color .15s ease, transform .1s ease;
-  }
-  .segment-card:hover{transform:translateY(-1px);}
-  .segment-card.active{border-color:var(--orange-1);background:var(--orange-soft);box-shadow:var(--shadow-sm);}
-  .segment-card .t{font-weight:700;font-size:14.5px;margin-bottom:3px;}
-  .segment-card .d{font-size:12.5px;color:var(--text-muted);line-height:1.4;}
+.section{margin-top:40px;}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.section-head h2{font-size:20px;margin:0 0 4px;}
+.section-head .sub{font-size:13.5px;color:var(--text-muted);margin:0;}
+.step-badge{
+  display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;
+  background:var(--badge-bg);color:var(--badge-fg);font-size:12px;font-weight:700;font-family:'Space Grotesk';margin-right:8px;
+}
 
-  /* ---------- Product grid ---------- */
-  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
-  .product-card{
-    position:relative;text-align:left;border:1.5px solid var(--border);background:var(--surface);
-    border-radius:var(--radius-md);padding:18px;transition:border-color .15s ease, transform .12s ease, box-shadow .15s ease;
-    display:flex;flex-direction:column;gap:10px;height:100%;
-  }
-  .product-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
-  .product-card.active{border-color:var(--orange-1);box-shadow:var(--shadow-md);}
-  .product-card .icon-wrap{
-    width:42px;height:42px;border-radius:12px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;color:var(--orange-1);
-  }
-  .product-card.active .icon-wrap{background:var(--accent-grad);color:#fff;}
-  .product-card .pname{font-weight:700;font-size:15px;}
-  .product-card .pdesc{font-size:12.5px;color:var(--text-muted);line-height:1.45;flex-grow:1;}
-  .product-card .prange{font-size:13px;font-weight:700;font-family:'Space Grotesk';color:var(--text);}
-  .product-card .prange span{font-weight:500;color:var(--text-faint);font-family:'Manrope';font-size:11.5px;}
-  .reco-badge{
-    position:absolute;top:12px;right:12px;background:var(--black);color:#fff;font-size:10px;font-weight:700;
-    padding:3px 8px;border-radius:999px;letter-spacing:.02em;
-  }
-  :root[data-theme="dark"] .reco-badge{background:var(--accent-grad);color:#1a0e00;}
-  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .reco-badge{background:var(--accent-grad);color:#1a0e00;}}
+/* Paso 1: segmento */
+.segment-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@media (max-width:720px){.segment-grid{grid-template-columns:1fr;}}
+.segment-card{
+  text-align:left;border:1.5px solid var(--border);background:var(--surface);border-radius:var(--radius-md);
+  padding:14px 16px;transition:border-color .15s ease, transform .1s ease;
+}
+.segment-card:hover{transform:translateY(-1px);}
+.segment-card.active{border-color:var(--orange-1);background:var(--orange-soft);box-shadow:var(--shadow-sm);}
+.segment-card .t{display:block;font-weight:700;font-size:14.5px;margin-bottom:3px;}
+.segment-card .d{display:block;font-size:12.5px;color:var(--text-muted);line-height:1.4;}
 
-  /* ---------- Slider card ---------- */
-  .slider-card{
-    margin-top:16px;border:1.5px solid var(--border);background:var(--surface-2);border-radius:var(--radius-md);padding:20px;
-  }
-  .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
-  .slider-top .label{font-size:13px;color:var(--text-muted);font-weight:600;}
-  .slider-top .value{font-family:'Space Grotesk';font-weight:700;font-size:26px;}
-  .slider-top .value small{font-size:13px;color:var(--text-faint);font-weight:500;margin-left:6px;}
-  input[type=range]{
-    -webkit-appearance:none;width:100%;height:6px;border-radius:999px;background:var(--border);outline:none;margin:8px 0;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent-grad);
-    border:3px solid var(--surface);box-shadow:var(--shadow-md);cursor:pointer;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:20px;height:20px;border-radius:50%;background:var(--orange-1);border:3px solid var(--surface);box-shadow:var(--shadow-md);cursor:pointer;
-  }
-  .range-labels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-faint);}
+/* Paso 2: producto + slider */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.product-card{
+  position:relative;text-align:left;border:1.5px solid var(--border);background:var(--surface);
+  border-radius:var(--radius-md);padding:18px;transition:border-color .15s ease, transform .12s ease, box-shadow .15s ease;
+  display:flex;flex-direction:column;gap:10px;height:100%;
+}
+.product-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.product-card.active{border-color:var(--orange-1);box-shadow:var(--shadow-md);}
+.icon-wrap{
+  width:42px;height:42px;border-radius:12px;background:var(--bg-alt);
+  display:flex;align-items:center;justify-content:center;color:var(--orange-1);flex-shrink:0;
+}
+.product-card.active .icon-wrap,
+.extra-card.on .icon-wrap{background:var(--accent-grad);color:#fff;}
+.product-card .pname{font-weight:700;font-size:15px;}
+.product-card .pdesc{font-size:12.5px;color:var(--text-muted);line-height:1.45;flex-grow:1;}
+.product-card .prange{font-size:13px;font-weight:700;font-family:'Space Grotesk';}
+.reco-badge{
+  position:absolute;top:12px;right:12px;background:var(--badge-bg);color:var(--badge-fg);font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:999px;letter-spacing:.02em;
+}
+.slider-card{margin-top:16px;border:1.5px solid var(--border);background:var(--surface-2);border-radius:var(--radius-md);padding:20px;}
+.slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+.slider-top .label{font-size:13px;color:var(--text-muted);font-weight:600;}
+.slider-top .value{font-family:'Space Grotesk';font-weight:700;font-size:26px;}
+.slider-top .value small{font-size:13px;color:var(--text-faint);font-weight:500;margin-left:6px;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:var(--border);outline-offset:6px;margin:8px 0;}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent-grad);
+  border:3px solid var(--surface);box-shadow:var(--shadow-md);cursor:pointer;
+}
+input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:var(--border);}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--orange-1);border:3px solid var(--surface);box-shadow:var(--shadow-md);cursor:pointer;}
+.range-labels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-faint);}
+.slider-note{margin:12px 0 0;font-size:12px;color:var(--text-muted);line-height:1.4;}
 
-  /* ---------- Extras ---------- */
-  .cat-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:20px 0 10px;}
-  .cat-title:first-child{margin-top:0;}
-  .extra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
-  .extra-card{
-    display:flex;gap:12px;align-items:flex-start;text-align:left;border:1.5px solid var(--border);background:var(--surface);
-    border-radius:var(--radius-md);padding:14px;transition:border-color .15s ease;
-  }
-  .extra-card.on{border-color:var(--orange-1);background:var(--orange-soft);}
-  .extra-card .icon-wrap{
-    width:36px;height:36px;border-radius:10px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;color:var(--orange-1);flex-shrink:0;
-  }
-  .extra-card.on .icon-wrap{background:var(--accent-grad);color:#fff;}
-  .extra-card .body{flex-grow:1;}
-  .extra-card .ename{font-weight:700;font-size:13.5px;margin-bottom:2px;}
-  .extra-card .eprice{font-size:12.5px;color:var(--text-muted);font-weight:600;}
-  .extra-card .emonthly{font-size:11px;color:var(--orange-1);font-weight:700;margin-top:2px;}
-  .checkbox{
-    width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;
-    display:flex;align-items:center;justify-content:center;color:#fff;transition:all .15s ease;
-  }
-  .extra-card.on .checkbox{background:var(--accent-grad);border-color:transparent;}
-  .checkbox .icon{width:12px;height:12px;}
+/* Paso 3: extras */
+.cat-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:20px 0 10px;}
+.cat-title:first-child{margin-top:0;}
+.extra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+.extra-card{
+  display:flex;gap:12px;align-items:flex-start;text-align:left;border:1.5px solid var(--border);background:var(--surface);
+  border-radius:var(--radius-md);padding:14px;transition:border-color .15s ease;
+}
+.extra-card.on{border-color:var(--orange-1);background:var(--orange-soft);}
+.extra-card .icon-wrap{width:36px;height:36px;border-radius:10px;}
+.extra-card .body{display:block;flex-grow:1;}
+.extra-card .ename{display:block;font-weight:700;font-size:13.5px;margin-bottom:2px;}
+.extra-card .esubtitle{display:block;font-size:11.5px;color:var(--text-muted);margin-bottom:4px;line-height:1.35;}
+.extra-card .eprice{display:block;font-size:12.5px;color:var(--text-muted);font-weight:600;}
+.extra-card .emonthly{display:block;font-size:11px;color:var(--orange-1);font-weight:700;margin-top:2px;}
+.checkbox{
+  width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;color:#fff;transition:all .15s ease;
+}
+.extra-card.on .checkbox{background:var(--accent-grad);border-color:transparent;}
+.checkbox .icon{width:12px;height:12px;}
 
-  /* ---------- Maintenance ---------- */
-  .maint-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-  @media (max-width:820px){.maint-grid{grid-template-columns:repeat(2,1fr);}}
-  .maint-card{
-    text-align:left;border:1.5px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:14px;
-  }
-  .maint-card.active{border-color:var(--orange-1);background:var(--orange-soft);}
-  .maint-card .mname{font-weight:700;font-size:13.5px;margin-bottom:4px;}
-  .maint-card .mprice{font-size:12px;color:var(--text-muted);font-weight:600;}
+/* Paso 4: mantenimiento */
+.maint-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media (max-width:820px){.maint-grid{grid-template-columns:repeat(2,1fr);}}
+.maint-card{text-align:left;border:1.5px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:14px;}
+.maint-card.active{border-color:var(--orange-1);background:var(--orange-soft);}
+.maint-card .mname{display:block;font-weight:700;font-size:13.5px;margin-bottom:4px;}
+.maint-card .mprice{display:block;font-size:12px;color:var(--text-muted);font-weight:600;}
 
-  /* ---------- Layout: main + summary ---------- */
-  .layout{display:grid;grid-template-columns:1fr;gap:32px;margin-top:8px;}
-  @media (min-width:1040px){.layout{grid-template-columns:1.55fr 1fr;align-items:start;}}
-  .summary{
-    border:1.5px solid var(--border);background:var(--surface);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-md);
-  }
-  @media (min-width:1040px){.summary{position:sticky;top:88px;}}
-  .summary h3{font-size:15px;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
-  .sum-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;gap:8px;}
-  .sum-line .l{color:var(--text-muted);flex-grow:1;}
-  .sum-line .r{font-weight:700;white-space:nowrap;}
-  .total-block{margin-top:14px;padding-top:14px;border-top:1.5px solid var(--border);}
-  .total-block .tl{font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
-  .total-block .tv{font-family:'Space Grotesk';font-weight:700;font-size:32px;margin:4px 0 2px;line-height:1;}
-  .total-block .tv2{font-size:13px;color:var(--text-faint);}
-  .monthly-chip{
-    display:inline-flex;align-items:center;gap:6px;background:var(--bg-alt);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;margin-top:10px;
-  }
-  .monthly-chip b{color:var(--orange-1);}
-  .chart-box{margin-top:18px;border-top:1px solid var(--border);padding-top:16px;}
-  .chart-box .ctitle{font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;}
-  .chart-holder{position:relative;height:150px;}
-  .chart-holder.donut{height:190px;}
+/* Condiciones */
+.terms{margin-top:52px;border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:24px;background:var(--bg-alt);}
+.terms h3{font-size:15px;margin:0 0 12px;}
+.terms ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.terms li{font-size:12.5px;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start;line-height:1.4;}
+.terms li .icon{width:15px;height:15px;color:var(--orange-1);margin-top:1px;}
 
-  .lead-box{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);}
-  .field{margin-bottom:10px;}
-  .field label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:5px;}
-  .field input{
-    width:100%;border:1.5px solid var(--border);background:var(--bg-alt);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--text);
-  }
-  .field input:focus{outline:none;border-color:var(--orange-1);}
-  .cta-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-  .btn{
-    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;
-    font-weight:700;font-size:13.5px;border:none;white-space:nowrap;transition:transform .12s ease;
-  }
-  .btn:hover{transform:translateY(-1px);}
-  .btn-primary{background:#25D366;color:#fff;}
-  .btn-secondary{background:var(--black);color:#fff;}
-  :root[data-theme="dark"] .btn-secondary{background:var(--surface-2);border:1px solid var(--border);}
-  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-secondary{background:var(--surface-2);border:1px solid var(--border);}}
-  .btn .icon{width:16px;height:16px;}
-  .copied-msg{font-size:11.5px;color:var(--orange-1);font-weight:700;text-align:center;margin-top:6px;height:14px;}
+/* =====================================================================
+   6. RESUMEN + LEAD
+   ===================================================================== */
+.summary{border:1.5px solid var(--border);background:var(--surface);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-md);}
+@media (min-width:1040px){
+  .summary{position:sticky;top:88px;max-height:calc(100vh - 104px);overflow-y:auto;}  /* botones siempre alcanzables */
+}
+.summary h3{font-size:15px;margin:0 0 14px;}
+.sum-line{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;gap:12px;}
+.sum-line .l{color:var(--text-muted);flex-grow:1;}
+.sum-line .r{font-weight:700;white-space:nowrap;}
+.sum-sub{margin-top:14px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);}
+.total-block{margin-top:14px;padding-top:14px;border-top:1.5px solid var(--border);}
+.total-block .tl{font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.total-block .tv{font-family:'Space Grotesk';font-weight:700;font-size:32px;margin:4px 0 2px;line-height:1;}
+.total-block .tv2{font-size:13px;color:var(--text-faint);}
+.monthly-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg-alt);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;margin-top:10px;}
+.monthly-chip[hidden]{display:none;}
+.monthly-chip b{color:var(--orange-1);}
 
-  /* ---------- Terms strip ---------- */
-  .terms{
-    margin-top:52px;border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:24px;background:var(--bg-alt);
-  }
-  .terms h3{font-size:15px;margin:0 0 12px;}
-  .terms ul{margin:0;padding-left:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
-  .terms li{font-size:12.5px;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start;line-height:1.4;}
-  .terms li .icon{width:15px;height:15px;color:var(--orange-1);flex-shrink:0;margin-top:1px;}
+.chart-box{margin-top:18px;border-top:1px solid var(--border);padding-top:16px;}
+.chart-box .ctitle{font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;}
+.chart-holder{position:relative;height:150px;}
+.chart-holder.donut{height:190px;}
 
-  footer.bottom{margin-top:40px;text-align:center;font-size:12px;color:var(--text-faint);padding-top:20px;border-top:1px solid var(--border);}
+.lead-box{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);}
+.field{margin-bottom:10px;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:5px;}
+.field input{
+  width:100%;border:1.5px solid var(--border);background:var(--bg-alt);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--text);
+}
+.field input:focus{outline:none;border-color:var(--orange-1);}
+.field input.invalid{border-color:var(--danger);}
+
+.cta-stack{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;
+  font-weight:700;font-size:13.5px;border:1px solid transparent;transition:transform .12s ease, opacity .15s ease;
+}
+.btn:hover{transform:translateY(-1px);opacity:.94;}
+.btn span[data-icon]{display:inline-flex;}
+.btn .icon{width:16px;height:16px;}
+.btn-wa{grid-column:1 / -1;background:var(--wa);color:#fff;}
+.btn-dark{background:var(--btn-dark-bg);border-color:var(--btn-dark-border);color:#fff;}
+.btn-outline{background:transparent;border-color:var(--border);color:var(--text);}
+.form-msg{min-height:16px;margin-top:8px;font-size:12px;font-weight:700;color:var(--orange-1);text-align:center;}
+.form-msg.error{color:var(--danger);}
+.consent{margin:10px 0 0;font-size:11px;line-height:1.4;color:var(--text-faint);text-align:center;}
+
+footer.bottom{margin-top:40px;text-align:center;font-size:12px;color:var(--text-faint);padding-top:20px;border-top:1px solid var(--border);}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;scroll-behavior:auto !important;}
+}
 </style>
 </head>
 <body>
+
+<noscript><div class="no-js">Activa JavaScript para usar el cotizador.</div></noscript>
 
 <header class="top">
   <div class="top-inner">
     <div class="brand">
       <div class="brand-mark">$</div>
       <div class="brand-text">
-        <div class="name" data-t="brandName">Tu Marca</div>
-        <div class="tag" data-t="brandTag">Cotizador de sitios web</div>
+        <div class="name" data-t="brandName"></div>
+        <div class="tag" data-t="brandTag"></div>
       </div>
     </div>
     <div class="controls-row">
-      <div class="pill-group" id="countryToggle">
-        <button class="pill-btn" data-country="co">🇨🇴 Colombia</button>
-        <button class="pill-btn" data-country="pa">🇵🇦 Panamá</button>
+      <div class="pill-group" id="countryToggle" role="group">
+        <button type="button" class="pill-btn" data-country="co">🇨🇴 Colombia</button>
+        <button type="button" class="pill-btn" data-country="pa">🇵🇦 Panamá</button>
       </div>
-      <div class="pill-group" id="currencyToggle">
-        <button class="pill-btn" data-currency="COP">COP</button>
-        <button class="pill-btn" data-currency="USD">USD</button>
+      <div class="pill-group" id="currencyToggle" role="group">
+        <button type="button" class="pill-btn" data-currency="COP">COP</button>
+        <button type="button" class="pill-btn" data-currency="USD">USD</button>
       </div>
-      <div class="pill-group" id="langToggle">
-        <button class="pill-btn" data-lang="es">ES</button>
-        <button class="pill-btn" data-lang="en">EN</button>
+      <div class="pill-group" id="langToggle" role="group">
+        <button type="button" class="pill-btn" data-lang="es">ES</button>
+        <button type="button" class="pill-btn" data-lang="en">EN</button>
       </div>
-      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme"></button>
+      <button type="button" class="icon-btn" id="themeToggle" data-ta="themeLabel"></button>
     </div>
   </div>
 </header>
 
 <div class="wrap">
+
   <section class="hero">
-    <div class="hero-kicker"><span data-t="kicker">⚡ En tiempo real</span></div>
-    <h1><span data-t="heroTitle1">Cotiza tu sitio web</span> <span class="grad" data-t="heroTitle2">en segundos</span></h1>
-    <p data-t="heroSub">Selecciona tu tipo de proyecto, agrega automatización e inteligencia artificial, y obtén un precio ajustado a Colombia o Panamá — en pesos o en dólares.</p>
+    <div class="hero-kicker"><span data-t="kicker"></span></div>
+    <h1><span data-t="heroTitle1"></span> <span class="grad" data-t="heroTitle2"></span></h1>
+    <p data-t="heroSub"></p>
+  </section>
+
+  <!-- Recomendador rápido -->
+  <section class="reco" id="recoModule">
+    <div class="reco-head">
+      <h2 class="reco-title" data-t="recoTitle"></h2>
+      <button type="button" class="icon-btn" id="recoClose" data-icon="x" data-ta="recoClose"></button>
+    </div>
+    <div class="reco-grid" id="recoGrid">
+      <button type="button" class="reco-btn" data-reco="ventas" data-t="recoVentas"></button>
+      <button type="button" class="reco-btn" data-reco="prospectos" data-t="recoProspectos"></button>
+      <button type="button" class="reco-btn" data-reco="profesional" data-t="recoProfesional"></button>
+      <button type="button" class="reco-btn" data-reco="citas" data-t="recoCitas"></button>
+    </div>
   </section>
 
   <div class="layout">
     <main>
-      <!-- STEP 1: SEGMENT -->
+      <!-- PASO 1 -->
       <section class="section">
         <div class="section-head">
-          <div><h2><span class="step-badge">1</span><span data-t="step1Title">¿Quién eres?</span></h2>
-          <p class="sub" data-t="step1Sub">Esto ajusta la recomendación de precio dentro de cada rango.</p></div>
+          <div>
+            <h2><span class="step-badge">1</span><span data-t="step1Title"></span></h2>
+            <p class="sub" data-t="step1Sub"></p>
+          </div>
         </div>
         <div class="segment-grid" id="segmentGrid"></div>
       </section>
 
-      <!-- STEP 2: PRODUCT -->
+      <!-- PASO 2 -->
       <section class="section">
         <div class="section-head">
-          <div><h2><span class="step-badge">2</span><span data-t="step2Title">Tipo de sitio web</span></h2>
-          <p class="sub" data-t="step2Sub">Precios de referencia del mercado colombiano y panameño para producción real.</p></div>
+          <div>
+            <h2><span class="step-badge">2</span><span data-t="step2Title"></span></h2>
+            <p class="sub" data-t="step2Sub"></p>
+          </div>
         </div>
         <div class="product-grid" id="productGrid"></div>
 
         <div class="slider-card">
           <div class="slider-top">
-            <span class="label" data-t="sliderLabel">Nivel dentro del rango</span>
+            <span class="label" data-t="sliderLabel"></span>
             <span class="value" id="sliderValue"></span>
           </div>
-          <input type="range" id="pctSlider" min="0" max="100" value="0">
+          <input type="range" id="pctSlider" min="0" max="100" value="0" data-ta="sliderLabel">
           <div class="range-labels"><span id="rangeMin"></span><span id="rangeMax"></span></div>
+          <p class="slider-note" data-t="basePriceNote"></p>
         </div>
       </section>
 
-      <!-- STEP 3: EXTRAS -->
+      <!-- PASO 3 -->
       <section class="section">
         <div class="section-head">
-          <div><h2><span class="step-badge">3</span><span data-t="step3Title">Automatización e IA</span></h2>
-          <p class="sub" data-t="step3Sub">Complementos que aumentan el ticket y generan ingresos recurrentes.</p></div>
+          <div>
+            <h2><span class="step-badge">3</span><span data-t="step3Title"></span></h2>
+            <p class="sub" data-t="step3Sub"></p>
+          </div>
         </div>
         <div id="extrasContainer"></div>
       </section>
 
-      <!-- STEP 4: MAINTENANCE -->
+      <!-- PASO 4 -->
       <section class="section">
         <div class="section-head">
-          <div><h2><span class="step-badge">4</span><span data-t="step4Title">Mantenimiento mensual</span></h2>
-          <p class="sub" data-t="step4Sub">Vende continuidad, no solo el sitio.</p></div>
+          <div>
+            <h2><span class="step-badge">4</span><span data-t="step4Title"></span></h2>
+            <p class="sub" data-t="step4Sub"></p>
+          </div>
         </div>
         <div class="maint-grid" id="maintGrid"></div>
       </section>
 
       <div class="terms">
-        <h3 data-t="termsTitle">Condiciones comerciales sugeridas</h3>
+        <h3 data-t="termsTitle"></h3>
         <ul id="termsList"></ul>
       </div>
     </main>
 
-    <!-- SUMMARY -->
-    <aside class="summary">
-      <h3 data-t="summaryTitle">📋 Tu cotización</h3>
+    <!-- RESUMEN + CAPTURA DE LEAD (único formulario) -->
+    <aside class="summary" id="summary">
+      <h3 data-t="summaryTitle"></h3>
       <div id="summaryLines"></div>
+
       <div class="total-block">
-        <div class="tl" data-t="totalSetupLabel">Total implementación</div>
+        <div class="tl" data-t="totalSetupLabel"></div>
         <div class="tv" id="totalMain"></div>
         <div class="tv2" id="totalAlt"></div>
-        <div class="monthly-chip" id="monthlyChip"></div>
+        <div class="monthly-chip" id="monthlyChip" hidden></div>
       </div>
 
       <div class="chart-box">
-        <div class="ctitle" data-t="chartBarTitle">Vs. paquetes de referencia</div>
+        <div class="ctitle" data-t="chartBarTitle"></div>
         <div class="chart-holder"><canvas id="barChart"></canvas></div>
       </div>
       <div class="chart-box">
-        <div class="ctitle" data-t="chartDonutTitle">Composición de la cotización</div>
+        <div class="ctitle" data-t="chartDonutTitle"></div>
         <div class="chart-holder donut"><canvas id="donutChart"></canvas></div>
       </div>
 
       <div class="lead-box">
         <div class="field">
-          <label data-t="labelName">Nombre</label>
-          <input type="text" id="leadName" placeholder="—">
+          <label for="leadName" data-t="labelName"></label>
+          <input type="text" id="leadName" autocomplete="name" data-tp="phName">
         </div>
         <div class="field">
-          <label data-t="labelContact">WhatsApp o email</label>
-          <input type="text" id="leadContact" placeholder="—">
+          <label for="leadContact" data-t="labelContact"></label>
+          <input type="text" id="leadContact" autocomplete="off" data-tp="phContact">
         </div>
-        <div class="cta-row">
-          <button class="btn btn-primary" id="btnWhatsapp"></button>
-          <button class="btn btn-secondary" id="btnCopy"></button>
+        <div class="cta-stack">
+          <button type="button" class="btn btn-wa" id="btnWhatsapp"><span data-icon="whatsapp"></span><span data-t="btnWhatsapp"></span></button>
+          <button type="button" class="btn btn-dark" id="btnPdf"><span data-icon="fileText"></span><span data-t="btnPdf"></span></button>
+          <button type="button" class="btn btn-outline" id="btnCopy"><span data-icon="copy"></span><span data-t="btnCopy"></span></button>
         </div>
-        <div class="copied-msg" id="copiedMsg"></div>
+        <div class="form-msg" id="formMsg" role="status" aria-live="polite"></div>
+        <p class="consent" data-t="consent"></p>
       </div>
     </aside>
   </div>
 
-  <footer class="bottom" data-t="footerNote">Precios estimados de referencia. La cotización final depende del alcance escrito, contenido entregado por el cliente e integraciones. Tasa usada para conversión aproximada: editable en el código.</footer>
+  <footer class="bottom" data-t="footerNote"></footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function(){
 "use strict";
 
-/* ================= CONFIG — edita esto con tus datos reales ================= */
+/* =====================================================================
+   1. CONFIG — edita solo este bloque
+   ===================================================================== */
 const CONFIG = {
-  whatsappNumber: "573122977712", // TODO: reemplaza por tu número real, formato: código país + número, sin '+' ni espacios
+  whatsappNumber: "573122977712",
+  webhookUrl: "",            // Opcional: URL de Webhook de n8n / Make para enviar cada lead a tu CRM
+  exchangeRate: 4000,        // COP por 1 USD — actualízalo con la TRM vigente
   brandName: { es: "Tu Marca Aqui", en: "Your Brand Here" },
-  brandTag: { es: "Sitios web con IA · Colombia & Panamá", en: "AI-powered websites · Colombia & Panama" },
-  exchangeRate: 4000 // COP por 1 USD — actualiza cuando cambie el mercado
+  brandTag:  { es: "Sitios web con IA · Colombia & Panamá", en: "AI-powered websites · Colombia & Panama" },
 };
+const PREFS_KEY = "cotizador_prefs";
 
-/* ================= DATA ================= */
+/* =====================================================================
+   2. DATOS DE NEGOCIO
+   ===================================================================== */
 const PRODUCTS = [
   { id:"landing", icon:"rocket", segs:["particular","pyme"],
     name:{es:"Landing comercial",en:"Commercial landing page"},
@@ -467,61 +531,84 @@ const PRODUCTS = [
 ];
 
 const EXTRAS = [
-  { id:"cms", cat:"infra", icon:"fileText", name:{es:"CMS / Blog editable",en:"Editable CMS / Blog"}, co:800000, pa:150 },
-  { id:"panel", cat:"infra", icon:"database", name:{es:"Panel administrativo + base de datos",en:"Admin panel + database"}, co:1500000, pa:350 },
-  { id:"n8n", cat:"automation", icon:"workflow", name:{es:"Automatización con n8n",en:"n8n automation"}, co:1200000, pa:250 },
-  { id:"crmint", cat:"automation", icon:"users", name:{es:"Integración CRM (HubSpot / Kommo / Zoho)",en:"CRM integration (HubSpot / Kommo / Zoho)"}, co:900000, pa:180 },
-  { id:"pagos", cat:"commerce", icon:"card", name:{es:"Pasarela de pagos",en:"Payment gateway"}, co:1000000, pa:250 },
-  { id:"chatbot", cat:"ai", icon:"message", name:{es:"Chatbot IA en WhatsApp (FAQ + captura de leads)",en:"AI WhatsApp chatbot (FAQ + lead capture)"}, co:1600000, pa:400, moCo:200000, moPa:50 },
-  { id:"agent", cat:"ai", icon:"cpu", name:{es:"Agente IA conversacional (califica y agenda citas)",en:"Conversational AI agent (qualifies & books meetings)"}, co:3500000, pa:900, moCo:450000, moPa:110 },
-  { id:"voicebot", cat:"ai", icon:"mic", name:{es:"Voicebot IA (atención por voz)",en:"AI voicebot (voice support)"}, co:6000000, pa:1500, moCo:900000, moPa:220 },
+  { id:"cms", cat:"infra", icon:"fileText", name:{es:"Panel para publicar noticias y artículos",en:"Editable CMS / Blog"}, subtitle:{es:"Panel web para contenido",en:"Web content panel"}, co:800000, pa:150 },
+  { id:"panel", cat:"infra", icon:"database", name:{es:"Panel administrativo + base de datos",en:"Admin panel + database"}, subtitle:{es:"Gestión de datos centralizada",en:"Centralized data management"}, co:1500000, pa:350 },
+  { id:"n8n", cat:"automation", icon:"workflow", name:{es:"Conexión automática de datos (envío directo a tu base de datos)",en:"Automated data connection (direct database send)"}, subtitle:{es:"Flujos de trabajo automáticos",en:"Automated workflows"}, co:1200000, pa:250 },
+  { id:"crmint", cat:"automation", icon:"users", name:{es:"Sistema de seguimiento de clientes",en:"Customer tracking system"}, subtitle:{es:"Organiza tus prospectos",en:"Organize your prospects"}, co:900000, pa:180 },
+  { id:"pagos", cat:"commerce", icon:"card", name:{es:"Pasarela de pagos",en:"Payment gateway"}, subtitle:{es:"Procesamiento de pagos",en:"Payment processing"}, co:1000000, pa:250 },
+  { id:"chatbot", cat:"ai", icon:"message", name:{es:"Asistente Virtual 24/7 en WhatsApp (responde preguntas de clientes a cualquier hora)",en:"24/7 WhatsApp Virtual Assistant (answers customer questions anytime)"}, subtitle:{es:"Atención al cliente 24/7",en:"24/7 customer support"}, co:1600000, pa:400, moCo:200000, moPa:50 },
+  { id:"agent", cat:"ai", icon:"cpu", name:{es:"Vendedor Virtual en WhatsApp (califica clientes y agenda citas en tu calendario)",en:"WhatsApp Virtual Sales Agent (qualifies clients and books meetings)"}, subtitle:{es:"Calificación y citas",en:"Qualification and booking"}, co:3500000, pa:900, moCo:450000, moPa:110 },
+  { id:"voicebot", cat:"ai", icon:"mic", name:{es:"Atención por Voz con Inteligencia Artificial (atiende llamadas telefónicas automáticamente)",en:"AI Voicebot (automatically handles phone calls)"}, subtitle:{es:"Llamadas automáticas",en:"Automated calls"}, co:6000000, pa:1500, moCo:900000, moPa:220 },
 ];
 
 const CATS = [
-  { id:"infra", name:{es:"Infraestructura",en:"Infrastructure"} },
+  { id:"infra",      name:{es:"Infraestructura",en:"Infrastructure"} },
   { id:"automation", name:{es:"Automatización & CRM",en:"Automation & CRM"} },
-  { id:"commerce", name:{es:"Comercio",en:"Commerce"} },
-  { id:"ai", name:{es:"Inteligencia Artificial",en:"Artificial Intelligence"} },
+  { id:"commerce",   name:{es:"Comercio",en:"Commerce"} },
+  { id:"ai",         name:{es:"Inteligencia Artificial",en:"Artificial Intelligence"} },
 ];
 
 const MAINT = [
-  { id:"none", name:{es:"Sin mantenimiento",en:"No maintenance"}, co:[0,0], pa:[0,0] },
-  { id:"basico", name:{es:"Básico",en:"Basic"}, co:[180000,300000], pa:[50,80] },
-  { id:"profesional", name:{es:"Profesional",en:"Professional"}, co:[350000,650000], pa:[100,180] },
-  { id:"comercial", name:{es:"Comercial",en:"Commercial"}, co:[700000,1500000], pa:[200,400] },
+  { id:"none",        name:{es:"Sin mantenimiento",en:"No maintenance"}, co:[0,0],           pa:[0,0] },
+  { id:"basico",      name:{es:"Básico",en:"Basic"},                      co:[180000,300000], pa:[50,80] },
+  { id:"profesional", name:{es:"Profesional",en:"Professional"},          co:[350000,650000], pa:[100,180] },
+  { id:"comercial",   name:{es:"Comercial",en:"Commercial"},              co:[700000,1500000],pa:[200,400] },
 ];
 
 const REF_PACKAGES = [
-  { name:{es:"Esencial",en:"Essential"}, co:1500000, pa:500 },
+  { name:{es:"Esencial",en:"Essential"},       co:1500000, pa:500 },
   { name:{es:"Profesional",en:"Professional"}, co:3500000, pa:1200 },
-  { name:{es:"Comercial",en:"Commercial"}, co:6500000, pa:2200 },
+  { name:{es:"Comercial",en:"Commercial"},     co:6500000, pa:2200 },
 ];
 
 const SEGMENTS = [
   { id:"particular", pct:15, name:{es:"Particular con negocio",en:"Individual with a business"}, desc:{es:"Freelancer, profesional independiente o emprendimiento pequeño.",en:"Freelancer, independent professional or small venture."} },
-  { id:"pyme", pct:40, name:{es:"PYME",en:"SME"}, desc:{es:"Empresa pequeña o mediana con equipo comercial activo.",en:"Small or mid-sized company with an active sales team."} },
-  { id:"mediana", pct:75, name:{es:"Mediana empresa",en:"Mid-size company"}, desc:{es:"Operación establecida, múltiples áreas y mayor volumen de clientes.",en:"Established operation, multiple departments, higher client volume."} },
+  { id:"pyme",       pct:40, name:{es:"PYME",en:"SME"},                                          desc:{es:"Empresa pequeña o mediana con equipo comercial activo.",en:"Small or mid-sized company with an active sales team."} },
+  { id:"mediana",    pct:75, name:{es:"Mediana empresa",en:"Mid-size company"},                  desc:{es:"Operación establecida, múltiples áreas y mayor volumen de clientes.",en:"Established operation, multiple departments, higher client volume."} },
 ];
 
-/* ================= I18N ================= */
+/* Recomendador: cada necesidad → paquete sugerido (el segmento lo elige el usuario en el paso 1) */
+const RECOMMENDATIONS = {
+  ventas:      { product:"tienda",     extras:["pagos","chatbot"], maint:"basico" },
+  prospectos:  { product:"landing",    extras:["chatbot"],         maint:"basico" },
+  profesional: { product:"corppro",    extras:["cms","panel"],     maint:"basico" },
+  citas:       { product:"corpbasico", extras:["agent"],           maint:"basico" },
+};
+
+/* Redondeo de precios base para cotizar en cifras limpias */
+const ROUND_STEP = { co:10000, pa:5 };
+
+/* =====================================================================
+   3. TEXTOS (i18n)
+   ===================================================================== */
 const T = {
   es:{
-    brandName:CONFIG.brandName.es, brandTag:CONFIG.brandTag.es,
+    pageTitle:"Cotizador de sitios web — Colombia & Panamá",
     kicker:"⚡ En tiempo real",
     heroTitle1:"Cotiza tu sitio web", heroTitle2:"en segundos",
     heroSub:"Selecciona tu tipo de proyecto, agrega automatización e inteligencia artificial, y obtén un precio ajustado a Colombia o Panamá — en pesos o en dólares.",
+    themeLabel:"Cambiar tema",
+    recoTitle:"🎯 Recomendador rápido", recoClose:"Cerrar recomendador",
+    recoVentas:"🛍️ Vender productos", recoProspectos:"📞 Prospectos por WhatsApp", recoProfesional:"🏢 Imagen profesional", recoCitas:"📅 Agendar citas",
     step1Title:"¿Quién eres?", step1Sub:"Esto ajusta la recomendación de precio dentro de cada rango.",
     step2Title:"Tipo de sitio web", step2Sub:"Precios de referencia para producción real, no plantillas desechables.",
-    step3Title:"Automatización e IA", step3Sub:"Complementos que aumentan el ticket y generan ingresos recurrentes.",
-    step4Title:"Mantenimiento mensual", step4Sub:"Vende continuidad, no solo el sitio.",
-    sliderLabel:"Nivel dentro del rango", recommended:"Recomendado",
+    step3Title:"Automatización e IA", step3Sub:"Complementos que atienden clientes, capturan prospectos y trabajan por ti las 24 horas.",
+    step4Title:"Mantenimiento mensual", step4Sub:"Mantén tu sitio seguro, actualizado y funcionando sin preocupaciones.",
+    sliderLabel:"Nivel dentro del rango",
+    basePriceNote:"Este precio corresponde solo al sitio base. Automatización y mantenimiento se suman abajo; dominio y hosting se cotizan aparte.",
+    recommended:"Recomendado",
     summaryTitle:"📋 Tu cotización", totalSetupLabel:"Total implementación",
-    lineBase:"Sitio base", lineExtras:"Complementos", monthlyLabel:"mensual recurrente",
+    lineBase:"Sitio base", monthlySection:"Recurrente mensual", maintLine:"Mantenimiento",
+    perMonth:"mes", recurring:"recurrente", approxNote:"aprox.",
     labelName:"Nombre", labelContact:"WhatsApp o email",
-    btnWhatsapp:"Enviar por WhatsApp", btnCopy:"Copiar resumen", copied:"✓ Copiado al portapapeles",
-    chartBarTitle:"Vs. paquetes de referencia", chartDonutTitle:"Composición de la cotización",
-    footerNote:"Precios estimados de referencia. La cotización final depende del alcance escrito, contenido entregado por el cliente e integraciones. Tasa de conversión aproximada, editable en el código.",
-    approxNote:"aprox.",
+    phName:"Tu nombre", phContact:"3001234567 o correo@ejemplo.com",
+    btnWhatsapp:"Enviar por WhatsApp", btnPdf:"Descargar PDF", btnCopy:"Copiar resumen",
+    copied:"✓ Copiado al portapapeles", errCopy:"No se pudo copiar. Selecciona el texto manualmente.",
+    errFields:"Escribe tu nombre y un WhatsApp o email válido para continuar.",
+    errPdf:"No se pudo generar el PDF. Revisa tu conexión e inténtalo de nuevo.",
+    consent:"Al continuar autorizas el uso de tus datos para contactarte sobre esta cotización.",
+    chartBarTitle:"Vs. paquetes de referencia", chartDonutTitle:"Composición de la cotización", yourQuote:"Tu cotización",
+    footerNote:"Precios estimados de referencia. La cotización final depende del alcance por escrito, el contenido entregado por el cliente y las integraciones. Los valores en otra moneda son aproximados.",
     termsTitle:"Condiciones comerciales sugeridas",
     terms:[
       "50% al iniciar · 30% al entregar pruebas · 20% antes de publicar",
@@ -531,25 +618,39 @@ const T = {
       "Garantía de 30 días sobre errores de implementación",
       "El alcance final queda por escrito antes de iniciar"
     ],
-    prodSelectedTag:"Seleccionado",
+    countryCO:"Colombia", countryPA:"Panamá",
+    waIntro:"Hola, quiero cotizar un sitio web:", waName:"Nombre", waContact:"Contacto", waCountry:"País",
+    waType:"Tipo de sitio", waExtras:"Complementos", waMaint:"Mantenimiento", waTotal:"Total estimado", waMonthly:"Mensual",
+    pdfTitle:"Resumen de cotización", pdfDate:"Fecha", pdfClient:"Cliente", pdfContact:"Contacto",
+    pdfCountry:"País / moneda", pdfSetup:"Implementación", pdfApprox:"Equivalente aprox.:", pdfFile:"Cotizacion",
   },
   en:{
-    brandName:CONFIG.brandName.en, brandTag:CONFIG.brandTag.en,
+    pageTitle:"Website Quote Builder — Colombia & Panama",
     kicker:"⚡ Real-time",
     heroTitle1:"Quote your website", heroTitle2:"in seconds",
     heroSub:"Pick your project type, add automation and AI, and get a price adjusted for Colombia or Panama — in pesos or dollars.",
+    themeLabel:"Toggle theme",
+    recoTitle:"🎯 Quick recommender", recoClose:"Close recommender",
+    recoVentas:"🛍️ Sell products", recoProspectos:"📞 WhatsApp leads", recoProfesional:"🏢 Professional image", recoCitas:"📅 Book appointments",
     step1Title:"Who are you?", step1Sub:"This adjusts the recommended price inside each range.",
     step2Title:"Website type", step2Sub:"Market reference pricing for real production sites, not throwaway templates.",
-    step3Title:"Automation & AI", step3Sub:"Add-ons that raise the ticket and create recurring revenue.",
-    step4Title:"Monthly maintenance", step4Sub:"Sell continuity, not just the site.",
-    sliderLabel:"Level within range", recommended:"Recommended",
+    step3Title:"Automation & AI", step3Sub:"Add-ons that answer customers, capture leads and work for you around the clock.",
+    step4Title:"Monthly maintenance", step4Sub:"Keep your site secure, up to date and running without worries.",
+    sliderLabel:"Level within range",
+    basePriceNote:"This price covers the base site only. Automation and maintenance are added below; domain and hosting are quoted separately.",
+    recommended:"Recommended",
     summaryTitle:"📋 Your quote", totalSetupLabel:"Total implementation",
-    lineBase:"Base site", lineExtras:"Add-ons", monthlyLabel:"monthly recurring",
+    lineBase:"Base site", monthlySection:"Monthly recurring", maintLine:"Maintenance",
+    perMonth:"month", recurring:"recurring", approxNote:"approx.",
     labelName:"Name", labelContact:"WhatsApp or email",
-    btnWhatsapp:"Send via WhatsApp", btnCopy:"Copy summary", copied:"✓ Copied to clipboard",
-    chartBarTitle:"Vs. reference packages", chartDonutTitle:"Quote breakdown",
-    footerNote:"Estimated reference prices. Final quote depends on written scope, client-provided content and integrations. Approximate conversion rate, editable in the code.",
-    approxNote:"approx.",
+    phName:"Your name", phContact:"+57 300 123 4567 or email@example.com",
+    btnWhatsapp:"Send via WhatsApp", btnPdf:"Download PDF", btnCopy:"Copy summary",
+    copied:"✓ Copied to clipboard", errCopy:"Could not copy. Please select the text manually.",
+    errFields:"Enter your name and a valid WhatsApp number or email to continue.",
+    errPdf:"Could not generate the PDF. Check your connection and try again.",
+    consent:"By continuing you authorize the use of your data to contact you about this quote.",
+    chartBarTitle:"Vs. reference packages", chartDonutTitle:"Quote breakdown", yourQuote:"Your quote",
+    footerNote:"Estimated reference prices. Final quote depends on written scope, client-provided content and integrations. Values in another currency are approximate.",
     termsTitle:"Suggested commercial terms",
     terms:[
       "50% upfront · 30% on staging delivery · 20% before launch",
@@ -559,441 +660,295 @@ const T = {
       "30-day warranty covering implementation errors",
       "Final scope confirmed in writing before starting"
     ],
-    prodSelectedTag:"Selected",
+    countryCO:"Colombia", countryPA:"Panama",
+    waIntro:"Hi, I'd like to quote a website:", waName:"Name", waContact:"Contact", waCountry:"Country",
+    waType:"Website type", waExtras:"Add-ons", waMaint:"Maintenance", waTotal:"Estimated total", waMonthly:"Monthly",
+    pdfTitle:"Quote summary", pdfDate:"Date", pdfClient:"Client", pdfContact:"Contact",
+    pdfCountry:"Country / currency", pdfSetup:"Implementation", pdfApprox:"Approx. equivalent:", pdfFile:"Quote",
   }
 };
+Object.keys(T).forEach(l => { T[l].brandName = CONFIG.brandName[l]; T[l].brandTag = CONFIG.brandTag[l]; });
 
-/* ================= ICONS ================= */
+/* =====================================================================
+   4. ICONOS
+   ===================================================================== */
+const ICONS = {
+  rocket:'<path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-1-3-2 2-2-2-1 3c-1-1-2-3-2-5 0-4 2-8 5-10z"/><circle cx="12" cy="9" r="1.4"/>',
+  building:'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"/>',
+  buildingStar:'<rect x="3.5" y="6" width="13" height="15" rx="1"/><path d="M8 10h1M13 10h1M8 14h1M13 14h1"/><path d="M18.5 2l.9 1.8 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
+  workflow:'<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6h5a4 4 0 0 1 4 4M7 18h5a4 4 0 0 0 4-4"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  cart:'<circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2 3h2l2.6 12.6a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21 7H6"/>',
+  layers:'<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 12l10 5 10-5"/><path d="M2 17l10 5 10-5"/>',
+  fileText:'<path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 12h6M9 16h6"/>',
+  users:'<circle cx="8" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15.2 20c.3-2.3 1.8-3.8 3.8-4"/>',
+  message:'<path d="M4 5h16v11H8l-4 4z"/><circle cx="9" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15" cy="10.5" r=".9" fill="currentColor" stroke="none"/>',
+  cpu:'<rect x="6" y="6" width="12" height="12" rx="1"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
+  mic:'<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4M9 22h6"/>',
+  card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/>',
+  database:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>',
+  moon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5z"/>',
+  whatsapp:'<path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z"/><path d="M8.3 8.3c.2-.4.4-.4.6-.4h.5c.2 0 .3 0 .5.4l.6 1.5c.1.2.1.3 0 .5l-.4.5c-.1.2-.1.3 0 .5.3.5.8 1.1 1.4 1.5.6.5 1.2.8 1.8 1 .2.1.3 0 .4-.1l.4-.6c.1-.2.3-.2.5-.1l1.4.7c.2.1.3.2.3.4 0 .5-.2.9-.6 1.2-.4.3-.8.4-1.2.4-1.2 0-2.6-.6-3.8-1.6-1.2-1-2.1-2.3-2.4-3.5-.1-.5 0-1 .3-1.4z"/>',
+  check2:'<path d="M20 6L9 17l-5-5"/>',
+  circleTerm:'<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+};
 function icon(name, cls){
-  const p = {
-    rocket:'<path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-1-3-2 2-2-2-1 3c-1-1-2-3-2-5 0-4 2-8 5-10z"/><circle cx="12" cy="9" r="1.4"/>',
-    building:'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"/>',
-    buildingStar:'<rect x="3.5" y="6" width="13" height="15" rx="1"/><path d="M8 10h1M13 10h1M8 14h1M13 14h1"/><path d="M18.5 2l.9 1.8 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
-    workflow:'<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6h5a4 4 0 0 1 4 4M7 18h5a4 4 0 0 0 4-4"/>',
-    grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
-    cart:'<circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2 3h2l2.6 12.6a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21 7H6"/>',
-    layers:'<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 12l10 5 10-5"/><path d="M2 17l10 5 10-5"/>',
-    fileText:'<path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 12h6M9 16h6"/>',
-    users:'<circle cx="8" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15.2 20c.3-2.3 1.8-3.8 3.8-4"/>',
-    message:'<path d="M4 5h16v11H8l-4 4z"/><circle cx="9" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15" cy="10.5" r=".9" fill="currentColor" stroke="none"/>',
-    cpu:'<rect x="6" y="6" width="12" height="12" rx="1"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
-    mic:'<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4M9 22h6"/>',
-    card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/>',
-    database:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
-    sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>',
-    moon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5z"/>',
-    whatsapp:'<path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z"/><path d="M8.3 8.3c.2-.4.4-.4.6-.4h.5c.2 0 .3 0 .5.4l.6 1.5c.1.2.1.3 0 .5l-.4.5c-.1.2-.1.3 0 .5.3.5.8 1.1 1.4 1.5.6.5 1.2.8 1.8 1 .2.1.3 0 .4-.1l.4-.6c.1-.2.3-.2.5-.1l1.4.7c.2.1.3.2.3.4 0 .5-.2.9-.6 1.2-.4.3-.8.4-1.2.4-1.2 0-2.6-.6-3.8-1.6-1.2-1-2.1-2.3-2.4-3.5-.1-.5 0-1 .3-1.4z"/>',
-    check2:'<path d="M20 6L9 17l-5-5"/>',
-    circleTerm:'<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>',
-  };
-  return '<svg class="icon'+(cls?(' '+cls):'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(p[name]||'')+'</svg>';
+  return '<svg class="icon' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
 }
 
-/* ================= STATE ================= */
-let state = {
+/* =====================================================================
+   5. ESTADO + PREFERENCIAS
+   ===================================================================== */
+function segmentPct(id){ return (SEGMENTS.find(s => s.id === id) || SEGMENTS[0]).pct; }
+
+const state = {
   lang: "es",
-  theme: null,
+  theme: null,              // null = seguir el sistema
   country: "co",
   currency: "COP",
   segment: "particular",
   productId: "landing",
-  pct: 0,
+  pct: segmentPct("particular"),
   extras: new Set(),
   maintenanceId: "none",
+  reco: null,               // recomendación activa (solo para resaltar el botón)
 };
 
 function loadPrefs(){
   try{
-    const raw = localStorage.getItem("cotizador_prefs");
-    if(raw){
-      const p = JSON.parse(raw);
-      if(p.lang) state.lang = p.lang;
-      if(p.theme) state.theme = p.theme;
-      if(p.country) state.country = p.country;
-      if(p.currency) state.currency = p.currency;
-    }
+    const p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}") || {};
+    if(p.lang === "es" || p.lang === "en") state.lang = p.lang;
+    if(p.theme === "dark" || p.theme === "light") state.theme = p.theme;
+    if(p.country === "co" || p.country === "pa") state.country = p.country;
+    if(p.currency === "COP" || p.currency === "USD") state.currency = p.currency;
   }catch(e){}
 }
 function savePrefs(){
   try{
-    localStorage.setItem("cotizador_prefs", JSON.stringify({lang:state.lang, theme:state.theme, country:state.country, currency:state.currency}));
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ lang:state.lang, theme:state.theme, country:state.country, currency:state.currency }));
   }catch(e){}
 }
 
-/* ================= HELPERS ================= */
-function t(key){ return T[state.lang][key]; }
-function nativeCurrency(){ return state.country === "co" ? "COP" : "USD"; }
+/* =====================================================================
+   6. HELPERS
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const t = key => T[state.lang][key];
+const nativeCurrency = () => state.country === "co" ? "COP" : "USD";
+const getProduct = () => PRODUCTS.find(p => p.id === state.productId);
+
+const NF = {
+  COP: new Intl.NumberFormat("es-CO", { maximumFractionDigits:0 }),
+  USD: new Intl.NumberFormat("en-US", { maximumFractionDigits:0 }),
+};
 function fmt(value, currency){
   const v = Math.round(value);
-  if(currency === "COP") return "$" + v.toLocaleString("es-CO") + " COP";
-  return "US$" + v.toLocaleString("en-US");
+  return currency === "COP" ? "$" + NF.COP.format(v) + " COP" : "US$" + NF.USD.format(v);
 }
-function convert(value, fromCur, toCur){
-  if(fromCur === toCur) return value;
-  if(fromCur === "COP" && toCur === "USD") return value / CONFIG.exchangeRate;
-  return value * CONFIG.exchangeRate;
+function convert(value, from, to){
+  if(from === to) return value;
+  return from === "COP" ? value / CONFIG.exchangeRate : value * CONFIG.exchangeRate;
 }
-function getProduct(){ return PRODUCTS.find(p => p.id === state.productId); }
-function productRange(prod){ return prod[state.country]; }
+const toDisplay = value => convert(value, nativeCurrency(), state.currency);   // valor nativo → moneda elegida
+const money = value => fmt(toDisplay(value), state.currency);
+
+function systemTheme(){
+  try{ return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }catch(e){ return "light"; }
+}
+const currentTheme = () => state.theme || systemTheme();
+function applyTheme(){ document.documentElement.setAttribute("data-theme", currentTheme()); }
+
+/* "Título (descripción)" → { title, desc }. Si no hay paréntesis usa el subtítulo del dato. */
+function extraLabels(ex){
+  const full = ex.name[state.lang];
+  const m = full.match(/^(.*?)\s*\((.*)\)\s*$/);
+  if(m) return { title:m[1], desc:m[2].charAt(0).toUpperCase() + m[2].slice(1) };
+  return { title:full, desc:ex.subtitle[state.lang] };
+}
+
+/* =====================================================================
+   7. PRECIOS
+   ===================================================================== */
+const extraPrice   = ex => ex[state.country];
+const extraMonthly = ex => (state.country === "co" ? ex.moCo : ex.moPa) || 0;
+const maintValue   = plan => { const r = plan[state.country]; return (r[0] + r[1]) / 2; };   // punto medio del rango
+
 function productNativeValue(prod){
-  const r = productRange(prod); const min=r[0], max=r[1];
-  return min + (max-min) * state.pct/100;
+  const [min, max] = prod[state.country];
+  const step = ROUND_STEP[state.country];
+  const raw = min + (max - min) * state.pct / 100;
+  return Math.min(max, Math.max(min, Math.round(raw / step) * step));
 }
-function extraNative(extra){ return state.country === "co" ? extra.co : extra.pa; }
-function extraMonthlyNative(extra){ return state.country === "co" ? (extra.moCo||0) : (extra.moPa||0); }
-function maintNative(plan){ const r = plan[state.country]; return (r[0]+r[1])/2; }
 
 function computeTotals(){
   const prod = getProduct();
   const base = productNativeValue(prod);
+  const selected = EXTRAS.filter(ex => state.extras.has(ex.id));
+  const catSums = {};
+  CATS.forEach(c => { catSums[c.id] = 0; });
   let extrasSum = 0, extrasMonthly = 0;
-  const catSums = {infra:0, automation:0, commerce:0, ai:0};
-  EXTRAS.forEach(ex => {
-    if(state.extras.has(ex.id)){
-      const v = extraNative(ex);
-      extrasSum += v;
-      catSums[ex.cat] += v;
-      extrasMonthly += extraMonthlyNative(ex);
-    }
+  selected.forEach(ex => {
+    const v = extraPrice(ex);
+    extrasSum += v;
+    catSums[ex.cat] += v;
+    extrasMonthly += extraMonthly(ex);
   });
-  const maintPlan = MAINT.find(m => m.id === state.maintenanceId);
-  const maintMonthly = maintPlan ? maintNative(maintPlan) : 0;
-  const setupTotal = base + extrasSum;
-  const monthlyTotal = extrasMonthly + maintMonthly;
-  return {base, extrasSum, extrasMonthly, maintMonthly, setupTotal, monthlyTotal, catSums};
-}
-
-/* ================= RENDER: STATIC TEXT ================= */
-function renderStaticText(){
-  document.documentElement.lang = state.lang;
-  document.querySelectorAll("[data-t]").forEach(el => {
-    const key = el.getAttribute("data-t");
-    if(T[state.lang][key] !== undefined) el.textContent = T[state.lang][key];
-  });
-  document.title = state.lang === "es" ? "Cotizador de Sitios Web — Colombia & Panamá" : "Website Quote Builder — Colombia & Panama";
-}
-
-/* ================= RENDER: TOGGLES ================= */
-function renderToggles(){
-  document.querySelectorAll("#countryToggle .pill-btn").forEach(b => b.classList.toggle("active", b.dataset.country === state.country));
-  document.querySelectorAll("#currencyToggle .pill-btn").forEach(b => b.classList.toggle("active", b.dataset.currency === state.currency));
-  document.querySelectorAll("#langToggle .pill-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === state.lang));
-  const isDark = resolvedTheme() === "dark";
-  document.getElementById("themeToggle").innerHTML = icon(isDark ? "sun" : "moon");
-}
-function resolvedTheme(){
-  if(state.theme) return state.theme;
-  try{ return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }catch(e){ return "light"; }
-}
-function applyTheme(){
-  if(state.theme) document.documentElement.setAttribute("data-theme", state.theme);
-  else document.documentElement.removeAttribute("data-theme");
-}
-
-/* ================= RENDER: SEGMENTS ================= */
-function renderSegments(){
-  const grid = document.getElementById("segmentGrid");
-  grid.innerHTML = SEGMENTS.map(s => {
-    const active = s.id === state.segment;
-    return '<button class="segment-card'+(active?' active':'')+'" data-seg="'+s.id+'">'
-      + '<div class="t">'+s.name[state.lang]+'</div>'
-      + '<div class="d">'+s.desc[state.lang]+'</div>'
-      + '</button>';
-  }).join("");
-  grid.querySelectorAll("[data-seg]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.segment = btn.dataset.seg;
-      state.pct = SEGMENTS.find(s => s.id === state.segment).pct;
-      renderAll();
-    });
-  });
-}
-
-/* ================= RENDER: PRODUCTS ================= */
-function renderProducts(){
-  const grid = document.getElementById("productGrid");
-  const cur = state.currency;
-  const nat = nativeCurrency();
-  grid.innerHTML = PRODUCTS.map(p => {
-    const active = p.id === state.productId;
-    const r = productRange(p); const min=r[0], max=r[1];
-    const dMin = convert(min, nat, cur), dMax = convert(max, nat, cur);
-    const reco = p.segs.includes(state.segment);
-    return '<button class="product-card'+(active?' active':'')+'" data-prod="'+p.id+'">'
-      + (reco ? '<span class="reco-badge">'+t("recommended")+'</span>' : '')
-      + '<div class="icon-wrap">'+icon(p.icon,"icon-lg")+'</div>'
-      + '<div class="pname">'+p.name[state.lang]+'</div>'
-      + '<div class="pdesc">'+p.desc[state.lang]+'</div>'
-      + '<div class="prange">'+fmt(dMin,cur)+' – '+fmt(dMax,cur)+'</div>'
-      + '</button>';
-  }).join("");
-  grid.querySelectorAll("[data-prod]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.productId = btn.dataset.prod;
-      renderAll();
-    });
-  });
-  const prod = getProduct();
-  const r = productRange(prod); const min=r[0], max=r[1];
-  const slider = document.getElementById("pctSlider");
-  slider.value = state.pct;
-  document.getElementById("rangeMin").textContent = fmt(convert(min,nat,cur),cur);
-  document.getElementById("rangeMax").textContent = fmt(convert(max,nat,cur),cur);
-  const val = productNativeValue(prod);
-  document.getElementById("sliderValue").innerHTML = fmt(convert(val,nat,cur),cur) + (cur!==nat ? ' <small>('+t("approxNote")+')</small>' : '');
-}
-
-/* ================= RENDER: EXTRAS ================= */
-function renderExtras(){
-  const container = document.getElementById("extrasContainer");
-  const cur = state.currency, nat = nativeCurrency();
-  let html = "";
-  CATS.forEach(cat => {
-    const items = EXTRAS.filter(e => e.cat === cat.id);
-    if(!items.length) return;
-    html += '<div class="cat-title">'+cat.name[state.lang]+'</div><div class="extra-grid">';
-    items.forEach(ex => {
-      const on = state.extras.has(ex.id);
-      const price = convert(extraNative(ex), nat, cur);
-      const mo = extraMonthlyNative(ex);
-      html += '<button class="extra-card'+(on?' on':'')+'" data-extra="'+ex.id+'">'
-        + '<div class="icon-wrap">'+icon(ex.icon)+'</div>'
-        + '<div class="body">'
-          + '<div class="ename">'+ex.name[state.lang]+'</div>'
-          + '<div class="eprice">+'+fmt(price,cur)+'</div>'
-          + (mo ? '<div class="emonthly">+'+fmt(convert(mo,nat,cur),cur)+' / '+t("monthlyLabel")+'</div>' : '')
-        + '</div>'
-        + '<div class="checkbox">'+(on?icon("check2"):"")+'</div>'
-        + '</button>';
-    });
-    html += '</div>';
-  });
-  container.innerHTML = html;
-  container.querySelectorAll("[data-extra]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.extra;
-      if(state.extras.has(id)) state.extras.delete(id); else state.extras.add(id);
-      renderAll();
-    });
-  });
-}
-
-/* ================= RENDER: MAINTENANCE ================= */
-function renderMaintenance(){
-  const grid = document.getElementById("maintGrid");
-  const cur = state.currency, nat = nativeCurrency();
-  grid.innerHTML = MAINT.map(m => {
-    const active = m.id === state.maintenanceId;
-    const r = m[state.country]; const a=r[0], b=r[1];
-    const priceText = (a===0 && b===0) ? "—" : fmt(convert(a,nat,cur),cur)+"–"+fmt(convert(b,nat,cur),cur);
-    return '<button class="maint-card'+(active?' active':'')+'" data-maint="'+m.id+'">'
-      + '<div class="mname">'+m.name[state.lang]+'</div>'
-      + '<div class="mprice">'+priceText+(m.id!=="none" ? " / "+t("monthlyLabel").split(" ")[0] : "")+'</div>'
-      + '</button>';
-  }).join("");
-  grid.querySelectorAll("[data-maint]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.maintenanceId = btn.dataset.maint;
-      renderAll();
-    });
-  });
-}
-
-/* ================= RENDER: TERMS ================= */
-function renderTerms(){
-  document.getElementById("termsList").innerHTML = t("terms").map(txt =>
-    '<li>'+icon("circleTerm")+'<span>'+txt+'</span></li>'
-  ).join("");
-}
-
-/* ================= RENDER: SUMMARY ================= */
-let barChart = null, donutChart = null;
-function renderSummary(){
-  const cur = state.currency, nat = nativeCurrency();
-  const totals = computeTotals();
-  const prod = getProduct();
-
-  let lines = "";
-  lines += '<div class="sum-line"><span class="l">'+t("lineBase")+' — '+prod.name[state.lang]+'</span><span class="r">'+fmt(convert(totals.base,nat,cur),cur)+'</span></div>';
-  EXTRAS.forEach(ex => {
-    if(state.extras.has(ex.id)){
-      lines += '<div class="sum-line"><span class="l">'+ex.name[state.lang]+'</span><span class="r">'+fmt(convert(extraNative(ex),nat,cur),cur)+'</span></div>';
-    }
-  });
-  document.getElementById("summaryLines").innerHTML = lines;
-
-  const dMain = convert(totals.setupTotal, nat, cur);
-  const otherCur = cur === "COP" ? "USD" : "COP";
-  const dAlt = convert(totals.setupTotal, nat, otherCur);
-  document.getElementById("totalMain").textContent = fmt(dMain, cur);
-  document.getElementById("totalAlt").textContent = "≈ " + fmt(dAlt, otherCur);
-
-  const chip = document.getElementById("monthlyChip");
-  if(totals.monthlyTotal > 0){
-    chip.style.display = "inline-flex";
-    chip.innerHTML = "🔁 <b>"+fmt(convert(totals.monthlyTotal,nat,cur),cur)+"</b> / "+t("monthlyLabel");
-  } else {
-    chip.style.display = "none";
-  }
-
-  document.getElementById("btnWhatsapp").innerHTML = icon("whatsapp")+"<span>"+t("btnWhatsapp")+"</span>";
-  document.getElementById("btnCopy").innerHTML = icon("fileText")+"<span>"+t("btnCopy")+"</span>";
-
-  renderCharts(totals, cur, nat);
-}
-
-function chartColors(){
-  const styles = getComputedStyle(document.documentElement);
+  const maint = MAINT.find(m => m.id === state.maintenanceId) || MAINT[0];
+  const maintMonthly = maintValue(maint);
   return {
-    muted: styles.getPropertyValue("--text-muted").trim(),
-    border: styles.getPropertyValue("--border").trim(),
-    orange1: styles.getPropertyValue("--orange-1").trim(),
-    orange2: styles.getPropertyValue("--orange-2").trim(),
-    black: resolvedTheme()==="dark" ? "#3a352d" : styles.getPropertyValue("--black").trim(),
-    surface: styles.getPropertyValue("--surface").trim(),
+    base, selected, extrasSum, extrasMonthly, maint, maintMonthly, catSums,
+    setupTotal: base + extrasSum,
+    monthlyTotal: extrasMonthly + maintMonthly,
   };
 }
 
-function renderCharts(totals, cur, nat){
-  const c = chartColors();
-  const labels = REF_PACKAGES.map(p => p.name[state.lang]).concat([state.lang==="es"?"Tu cotización":"Your quote"]);
-  const refVals = REF_PACKAGES.map(p => convert(p[state.country], nat, cur));
-  const data = refVals.concat([convert(totals.setupTotal, nat, cur)]);
+/* =====================================================================
+   8. RENDER
+   ===================================================================== */
+function renderStaticText(){
+  const dict = T[state.lang];
+  document.documentElement.lang = state.lang;
+  document.title = dict.pageTitle;
+  document.querySelectorAll("[data-t]").forEach(el => { const v = dict[el.dataset.t]; if(v !== undefined) el.textContent = v; });
+  document.querySelectorAll("[data-tp]").forEach(el => { el.placeholder = dict[el.dataset.tp] || ""; });
+  document.querySelectorAll("[data-ta]").forEach(el => { el.setAttribute("aria-label", dict[el.dataset.ta] || ""); });
+}
 
-  const barCtx = document.getElementById("barChart").getContext("2d");
-  if(barChart) barChart.destroy();
-  barChart = new Chart(barCtx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: [c.border, c.border, c.border, c.orange1],
-        borderRadius: 8,
-        maxBarThickness: 34,
-      }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{
-        callbacks:{ label:(ctx)=> fmt(ctx.parsed.y, cur) },
-        backgroundColor:c.black, titleColor:"#fff", bodyColor:"#fff", padding:10, cornerRadius:8
-      }},
-      scales:{
-        x:{ ticks:{ color:c.muted, font:{size:10.5} }, grid:{ display:false } },
-        y:{ display:false, beginAtZero:true }
-      }
-    }
-  });
+function renderToggles(){
+  const mark = (groupId, attr, value) => {
+    document.querySelectorAll("#" + groupId + " .pill-btn").forEach(b => {
+      const on = b.dataset[attr] === value;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+  };
+  mark("countryToggle", "country", state.country);
+  mark("currencyToggle", "currency", state.currency);
+  mark("langToggle", "lang", state.lang);
+  $("themeToggle").innerHTML = icon(currentTheme() === "dark" ? "sun" : "moon");
+}
 
-  const catLabels = CATS.filter(cat => totals.catSums[cat.id] > 0).map(cat => cat.name[state.lang]);
-  const catData = CATS.filter(cat => totals.catSums[cat.id] > 0).map(cat => convert(totals.catSums[cat.id], nat, cur));
-  catLabels.unshift(t("lineBase"));
-  catData.unshift(convert(totals.base, nat, cur));
-  const palette = [c.black, c.orange1, c.orange2, "#C9A27A", "#8A8377"];
-
-  const donutCtx = document.getElementById("donutChart").getContext("2d");
-  if(donutChart) donutChart.destroy();
-  donutChart = new Chart(donutCtx, {
-    type: "doughnut",
-    data: {
-      labels: catLabels,
-      datasets: [{ data: catData, backgroundColor: palette, borderColor: c.surface, borderWidth: 3 }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false, cutout:"62%",
-      plugins:{
-        legend:{ position:"bottom", labels:{ color:c.muted, boxWidth:10, boxHeight:10, padding:10, font:{size:10.5} } },
-        tooltip:{ callbacks:{ label:(ctx)=> ctx.label+": "+fmt(ctx.parsed, cur) }, backgroundColor:c.black, titleColor:"#fff", bodyColor:"#fff", padding:10, cornerRadius:8 }
-      }
-    }
+function renderReco(){
+  document.querySelectorAll("#recoGrid .reco-btn").forEach(b => {
+    const on = b.dataset.reco === state.reco;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", String(on));
   });
 }
 
-/* ================= LEAD ACTIONS ================= */
-function buildSummaryText(){
-  const cur = state.currency, nat = nativeCurrency();
+function renderSegments(){
+  $("segmentGrid").innerHTML = SEGMENTS.map(s => {
+    const on = s.id === state.segment;
+    return `<button type="button" class="segment-card${on ? " active" : ""}" data-seg="${s.id}" aria-pressed="${on}">
+      <span class="t">${s.name[state.lang]}</span>
+      <span class="d">${s.desc[state.lang]}</span>
+    </button>`;
+  }).join("");
+}
+
+function renderProducts(){
+  $("productGrid").innerHTML = PRODUCTS.map(p => {
+    const on = p.id === state.productId;
+    const [min, max] = p[state.country];
+    const reco = p.segs.includes(state.segment);
+    return `<button type="button" class="product-card${on ? " active" : ""}" data-prod="${p.id}" aria-pressed="${on}">
+      ${reco ? `<span class="reco-badge">${t("recommended")}</span>` : ""}
+      <span class="icon-wrap">${icon(p.icon, "icon-lg")}</span>
+      <span class="pname">${p.name[state.lang]}</span>
+      <span class="pdesc">${p.desc[state.lang]}</span>
+      <span class="prange">${money(min)} – ${money(max)}</span>
+    </button>`;
+  }).join("");
+  renderSlider();
+}
+
+function renderSlider(){
+  const prod = getProduct();
+  const [min, max] = prod[state.country];
+  $("pctSlider").value = state.pct;
+  $("rangeMin").textContent = money(min);
+  $("rangeMax").textContent = money(max);
+  const approx = state.currency !== nativeCurrency() ? ` <small>(${t("approxNote")})</small>` : "";
+  $("sliderValue").innerHTML = money(productNativeValue(prod)) + approx;
+}
+
+function renderExtras(){
+  $("extrasContainer").innerHTML = CATS.map(cat => {
+    const cards = EXTRAS.filter(e => e.cat === cat.id).map(ex => {
+      const on = state.extras.has(ex.id);
+      const { title, desc } = extraLabels(ex);
+      const mo = extraMonthly(ex);
+      return `<button type="button" class="extra-card${on ? " on" : ""}" data-extra="${ex.id}" aria-pressed="${on}">
+        <span class="icon-wrap">${icon(ex.icon)}</span>
+        <span class="body">
+          <span class="ename">${title}</span>
+          <span class="esubtitle">${desc}</span>
+          <span class="eprice">+${money(extraPrice(ex))}</span>
+          ${mo ? `<span class="emonthly">+${money(mo)} / ${t("perMonth")}</span>` : ""}
+        </span>
+        <span class="checkbox">${on ? icon("check2") : ""}</span>
+      </button>`;
+    }).join("");
+    return cards ? `<div class="cat-title">${cat.name[state.lang]}</div><div class="extra-grid">${cards}</div>` : "";
+  }).join("");
+}
+
+function renderMaintenance(){
+  $("maintGrid").innerHTML = MAINT.map(m => {
+    const on = m.id === state.maintenanceId;
+    const [a, b] = m[state.country];
+    const price = (a === 0 && b === 0) ? "—" : `${money(a)}–${money(b)} / ${t("perMonth")}`;
+    return `<button type="button" class="maint-card${on ? " active" : ""}" data-maint="${m.id}" aria-pressed="${on}">
+      <span class="mname">${m.name[state.lang]}</span>
+      <span class="mprice">${price}</span>
+    </button>`;
+  }).join("");
+}
+
+function renderTerms(){
+  $("termsList").innerHTML = t("terms").map(txt => `<li>${icon("circleTerm")}<span>${txt}</span></li>`).join("");
+}
+
+function renderSummary(){
   const totals = computeTotals();
   const prod = getProduct();
-  const name = document.getElementById("leadName").value.trim();
-  const contact = document.getElementById("leadContact").value.trim();
-  const lines = [];
-  lines.push(state.lang==="es" ? "Hola, quiero cotizar un sitio web:" : "Hi, I'd like to quote a website:");
-  if(name) lines.push((state.lang==="es"?"Nombre: ":"Name: ")+name);
-  if(contact) lines.push((state.lang==="es"?"Contacto: ":"Contact: ")+contact);
-  lines.push((state.lang==="es"?"País: ":"Country: ")+(state.country==="co"?"Colombia":"Panamá"));
-  lines.push((state.lang==="es"?"Tipo de sitio: ":"Website type: ")+prod.name[state.lang]);
-  EXTRAS.forEach(ex => { if(state.extras.has(ex.id)) lines.push("+ "+ex.name[state.lang]); });
-  const maint = MAINT.find(m => m.id === state.maintenanceId);
-  if(maint && maint.id !== "none") lines.push((state.lang==="es"?"Mantenimiento: ":"Maintenance: ")+maint.name[state.lang]);
-  lines.push((state.lang==="es"?"Total estimado: ":"Estimated total: ")+fmt(convert(totals.setupTotal,nat,cur),cur));
-  if(totals.monthlyTotal>0) lines.push((state.lang==="es"?"Mensual: ":"Monthly: ")+fmt(convert(totals.monthlyTotal,nat,cur),cur));
-  return lines.join("\n");
+  const cur = state.currency, nat = nativeCurrency();
+  const other = cur === "COP" ? "USD" : "COP";
+  const line = (label, value) => `<div class="sum-line"><span class="l">${label}</span><span class="r">${value}</span></div>`;
+
+  let html = line(`${t("lineBase")} — ${prod.name[state.lang]}`, money(totals.base));
+  totals.selected.forEach(ex => { html += line(extraLabels(ex).title, money(extraPrice(ex))); });
+
+  if(totals.monthlyTotal > 0){
+    html += `<div class="sum-sub">${t("monthlySection")}</div>`;
+    totals.selected.filter(ex => extraMonthly(ex) > 0).forEach(ex => {
+      html += line(extraLabels(ex).title, money(extraMonthly(ex)));
+    });
+    if(totals.maintMonthly > 0) html += line(`${t("maintLine")} — ${totals.maint.name[state.lang]}`, money(totals.maintMonthly));
+  }
+  $("summaryLines").innerHTML = html;
+
+  $("totalMain").textContent = fmt(toDisplay(totals.setupTotal), cur);
+  $("totalAlt").textContent = "≈ " + fmt(convert(totals.setupTotal, nat, other), other);
+
+  const chip = $("monthlyChip");
+  if(totals.monthlyTotal > 0){
+    chip.hidden = false;
+    chip.innerHTML = `🔁 <b>${money(totals.monthlyTotal)}</b> / ${t("perMonth")} · ${t("recurring")}`;
+  }else{
+    chip.hidden = true;
+  }
+
+  renderCharts(totals);
 }
 
-/* ================= EVENT BINDINGS (static) ================= */
-function bindStaticEvents(){
-  document.querySelectorAll("#countryToggle .pill-btn").forEach(b => {
-    b.addEventListener("click", () => {
-      state.country = b.dataset.country;
-      state.currency = nativeCurrency();
-      savePrefs();
-      renderAll();
-    });
-  });
-  document.querySelectorAll("#currencyToggle .pill-btn").forEach(b => {
-    b.addEventListener("click", () => {
-      state.currency = b.dataset.currency;
-      savePrefs();
-      renderAll();
-    });
-  });
-  document.querySelectorAll("#langToggle .pill-btn").forEach(b => {
-    b.addEventListener("click", () => {
-      state.lang = b.dataset.lang;
-      savePrefs();
-      renderAll();
-    });
-  });
-  document.getElementById("themeToggle").addEventListener("click", () => {
-    state.theme = resolvedTheme() === "dark" ? "light" : "dark";
-    savePrefs();
-    applyTheme();
-    renderAll();
-  });
-  document.getElementById("pctSlider").addEventListener("input", (e) => {
-    state.pct = parseInt(e.target.value, 10);
-    renderProducts();
-    renderSummary();
-  });
-  document.getElementById("btnWhatsapp").addEventListener("click", () => {
-    const text = encodeURIComponent(buildSummaryText());
-    window.open("https://wa.me/"+CONFIG.whatsappNumber+"?text="+text, "_blank");
-  });
-  document.getElementById("btnCopy").addEventListener("click", () => {
-    const text = buildSummaryText();
-    const msgEl = document.getElementById("copiedMsg");
-    const showCopied = () => { msgEl.textContent = t("copied"); setTimeout(()=>{ msgEl.textContent=""; }, 2200); };
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(showCopied).catch(()=>{ fallbackCopy(text); showCopied(); });
-    } else {
-      fallbackCopy(text); showCopied();
-    }
-  });
-}
-function fallbackCopy(text){
-  try{
-    const ta = document.createElement("textarea");
-    ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
-    document.body.appendChild(ta); ta.select(); document.execCommand("copy");
-    document.body.removeChild(ta);
-  }catch(e){}
-}
-
-/* ================= MASTER RENDER ================= */
 function renderAll(){
   renderStaticText();
   renderToggles();
+  renderReco();
   renderSegments();
   renderProducts();
   renderExtras();
@@ -1002,17 +957,382 @@ function renderAll(){
   renderSummary();
 }
 
-/* ================= INIT ================= */
-loadPrefs();
-applyTheme();
-bindStaticEvents();
-renderAll();
+/* =====================================================================
+   9. GRÁFICOS (se crean una vez y luego solo se actualizan)
+   ===================================================================== */
+let barChart = null, donutChart = null;
 
-try{
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-    if(!state.theme) renderAll();
+function chartColors(){
+  const s = getComputedStyle(document.documentElement);
+  const v = name => s.getPropertyValue(name).trim();
+  const dark = currentTheme() === "dark";
+  return {
+    muted:v("--text-muted"), surface:v("--surface"),
+    orange1:v("--orange-1"), orange2:v("--orange-2"),
+    black: dark ? "#3a352d" : v("--black"),
+    refBar: dark ? "#4a443b" : v("--border"),
+  };
+}
+
+function renderCharts(totals){
+  if(!window.Chart) return;                       // si el CDN falla, el cotizador sigue funcionando
+  const c = chartColors();
+  const cur = state.currency, nat = nativeCurrency();
+  Chart.defaults.font.family = "Manrope, system-ui, sans-serif";
+
+  /* --- Barras: tu cotización vs. paquetes de referencia --- */
+  const barLabels = REF_PACKAGES.map(p => p.name[state.lang]).concat([t("yourQuote")]);
+  const barData = REF_PACKAGES.map(p => toDisplay(p[state.country])).concat([toDisplay(totals.setupTotal)]);
+  if(!barChart){
+    barChart = new Chart($("barChart"), {
+      type:"bar",
+      data:{ labels:[], datasets:[{ data:[], borderRadius:8, maxBarThickness:34 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ display:false },
+          tooltip:{ callbacks:{ label: ctx => fmt(ctx.parsed.y, state.currency) }, titleColor:"#fff", bodyColor:"#fff", padding:10, cornerRadius:8 }
+        },
+        scales:{ x:{ grid:{ display:false }, ticks:{ font:{ size:10.5 } } }, y:{ display:false, beginAtZero:true } }
+      }
+    });
+  }
+  barChart.data.labels = barLabels;
+  barChart.data.datasets[0].data = barData;
+  barChart.data.datasets[0].backgroundColor = [c.refBar, c.refBar, c.refBar, c.orange1];
+  barChart.options.scales.x.ticks.color = c.muted;
+  barChart.options.plugins.tooltip.backgroundColor = c.black;
+  barChart.update("none");
+
+  /* --- Dona: base + categorías con valor (color fijo por categoría) --- */
+  const catColor = { infra:c.orange1, automation:c.orange2, commerce:"#C9A27A", ai:"#8A8377" };
+  const items = [{ label:t("lineBase"), value:totals.base, color:c.black }].concat(
+    CATS.filter(cat => totals.catSums[cat.id] > 0)
+        .map(cat => ({ label:cat.name[state.lang], value:totals.catSums[cat.id], color:catColor[cat.id] }))
+  );
+  if(!donutChart){
+    donutChart = new Chart($("donutChart"), {
+      type:"doughnut",
+      data:{ labels:[], datasets:[{ data:[], borderWidth:3 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:"62%",
+        plugins:{
+          legend:{ position:"bottom", labels:{ boxWidth:10, boxHeight:10, padding:10, font:{ size:10.5 } } },
+          tooltip:{ callbacks:{ label: ctx => ctx.label + ": " + fmt(ctx.parsed, state.currency) }, titleColor:"#fff", bodyColor:"#fff", padding:10, cornerRadius:8 }
+        }
+      }
+    });
+  }
+  donutChart.data.labels = items.map(i => i.label);
+  donutChart.data.datasets[0].data = items.map(i => convert(i.value, nat, cur));
+  donutChart.data.datasets[0].backgroundColor = items.map(i => i.color);
+  donutChart.data.datasets[0].borderColor = c.surface;
+  donutChart.options.plugins.legend.labels.color = c.muted;
+  donutChart.options.plugins.tooltip.backgroundColor = c.black;
+  donutChart.update("none");
+}
+
+/* =====================================================================
+   10. ACCIONES DEL LEAD (WhatsApp · PDF · Copiar · Webhook)
+   ===================================================================== */
+let msgTimer = null;
+function showMsg(text, isError){
+  const el = $("formMsg");
+  el.textContent = text;
+  el.classList.toggle("error", !!isError);
+  clearTimeout(msgTimer);
+  if(text) msgTimer = setTimeout(() => { el.textContent = ""; }, isError ? 4500 : 2200);
+}
+
+function getLead(){
+  return { name: $("leadName").value.trim(), contact: $("leadContact").value.trim() };
+}
+
+/* Nombre obligatorio + contacto válido (email o teléfono con 7+ dígitos) */
+function validateLead(){
+  const lead = getLead();
+  const okName = lead.name.length >= 2;
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.contact);
+  const okContact = isEmail || lead.contact.replace(/\D/g, "").length >= 7;
+  $("leadName").classList.toggle("invalid", !okName);
+  $("leadContact").classList.toggle("invalid", !okContact);
+  if(!okName || !okContact){
+    showMsg(t("errFields"), true);
+    (okName ? $("leadContact") : $("leadName")).focus();
+    return null;
+  }
+  return lead;
+}
+
+function buildSummaryText(lead){
+  const totals = computeTotals();
+  const L = [t("waIntro")];
+  if(lead.name) L.push(`${t("waName")}: ${lead.name}`);
+  if(lead.contact) L.push(`${t("waContact")}: ${lead.contact}`);
+  L.push(`${t("waCountry")}: ${t(state.country === "co" ? "countryCO" : "countryPA")}`);
+  L.push(`${t("waType")}: ${getProduct().name[state.lang]}`);
+  if(totals.selected.length){
+    L.push(`${t("waExtras")}:`);
+    totals.selected.forEach(ex => L.push("+ " + extraLabels(ex).title));
+  }
+  if(totals.maint.id !== "none") L.push(`${t("waMaint")}: ${totals.maint.name[state.lang]}`);
+  L.push(`${t("waTotal")}: ${money(totals.setupTotal)}`);
+  if(totals.monthlyTotal > 0) L.push(`${t("waMonthly")}: ${money(totals.monthlyTotal)}`);
+  return L.join("\n");
+}
+
+/* Envía el lead a n8n / Make si CONFIG.webhookUrl está definido.
+   Formulario url-encoded + no-cors: no requiere configurar CORS en el webhook. */
+function sendLead(lead, action){
+  if(!CONFIG.webhookUrl) return;
+  try{
+    const totals = computeTotals();
+    const cur = state.currency, nat = nativeCurrency();
+    const body = new URLSearchParams({
+      accion: action,
+      nombre: lead.name,
+      contacto: lead.contact,
+      pais: state.country,
+      moneda: cur,
+      idioma: state.lang,
+      segmento: state.segment,
+      sitio: state.productId,
+      extras: totals.selected.map(e => e.id).join(","),
+      mantenimiento: state.maintenanceId,
+      total_implementacion: String(Math.round(convert(totals.setupTotal, nat, cur))),
+      total_mensual: String(Math.round(convert(totals.monthlyTotal, nat, cur))),
+      resumen: buildSummaryText(lead),
+      fecha: new Date().toISOString(),
+    });
+    fetch(CONFIG.webhookUrl, { method:"POST", mode:"no-cors", body, keepalive:true }).catch(() => {});
+  }catch(e){}
+}
+
+function sendWhatsApp(){
+  const lead = validateLead();
+  if(!lead) return;
+  sendLead(lead, "whatsapp");
+  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(buildSummaryText(lead))}`;
+  window.open(url, "_blank", "noopener");
+}
+
+function fallbackCopy(text){
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function copySummary(){
+  const text = buildSummaryText(getLead());
+  const done = () => showMsg(t("copied"));
+  const fail = () => showMsg(t("errCopy"), true);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(() => { fallbackCopy(text) ? done() : fail(); });
+  }else{
+    fallbackCopy(text) ? done() : fail();
+  }
+}
+
+function downloadPDF(){
+  const lead = validateLead();
+  if(!lead) return;
+  if(!(window.jspdf && window.jspdf.jsPDF)){ showMsg(t("errPdf"), true); return; }
+  sendLead(lead, "pdf");
+
+  const doc = new window.jspdf.jsPDF({ unit:"mm", format:"a4" });
+  const totals = computeTotals();
+  const cur = state.currency, nat = nativeCurrency();
+  const other = cur === "COP" ? "USD" : "COP";
+  const PAGE_W = 210, MX = 18, RIGHT = PAGE_W - MX;
+  const safe = s => String(s).replace(/[—–]/g, "-").replace(/[^\x20-\x7E\xA0-\xFF]/g, "");   // las fuentes base del PDF solo soportan Latin-1
+  const ink = () => doc.setTextColor(23, 21, 18);
+  const muted = () => doc.setTextColor(110, 104, 95);
+  let y = 0;
+  const ensure = h => { if(y + h > 280){ doc.addPage(); y = 20; } };
+
+  /* Encabezado */
+  doc.setFillColor(14, 13, 12);   doc.rect(0, 0, PAGE_W, 30, "F");
+  doc.setFillColor(255, 106, 26); doc.rect(0, 30, PAGE_W, 1.5, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");   doc.setFontSize(16); doc.text(safe(t("brandName")), MX, 14);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text(safe(t("pdfTitle")), MX, 22);
+
+  /* Datos del cliente */
+  y = 44; ink(); doc.setFontSize(10);
+  const meta = [
+    [t("pdfDate"), new Date().toLocaleDateString(state.lang === "es" ? "es-CO" : "en-US")],
+    [t("pdfClient"), lead.name],
+    [t("pdfContact"), lead.contact],
+    [t("pdfCountry"), `${t(state.country === "co" ? "countryCO" : "countryPA")} - ${cur}`],
+  ];
+  meta.forEach(([k, v]) => {
+    doc.setFont("helvetica", "bold");   doc.text(safe(k) + ":", MX, y);
+    doc.setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(safe(v), RIGHT - MX - 34);
+    doc.text(lines, MX + 34, y);
+    y += Math.max(1, lines.length) * 5.5;
   });
-}catch(e){}
+
+  /* Helpers de tabla */
+  const section = title => {
+    ensure(16); y += 5;
+    doc.setFillColor(241, 238, 232); doc.rect(MX, y - 5, RIGHT - MX, 8, "F");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(10); ink();
+    doc.text(safe(title), MX + 2, y); y += 8;
+  };
+  const row = (label, amount, bold) => {
+    doc.setFont("helvetica", bold ? "bold" : "normal"); doc.setFontSize(10); ink();
+    const lines = doc.splitTextToSize(safe(label), 112);
+    ensure(lines.length * 5 + 3);
+    doc.text(lines, MX + 2, y);
+    if(amount) doc.text(safe(amount), RIGHT - 2, y, { align:"right" });
+    y += lines.length * 5;
+    doc.setDrawColor(231, 226, 217); doc.line(MX, y - 2.5, RIGHT, y - 2.5);
+    y += 2;
+  };
+
+  /* Implementación */
+  section(t("pdfSetup"));
+  row(`${t("lineBase")} - ${getProduct().name[state.lang]}`, money(totals.base));
+  totals.selected.forEach(ex => row(extraLabels(ex).title, money(extraPrice(ex))));
+  row(t("totalSetupLabel"), money(totals.setupTotal), true);
+  ensure(8); muted(); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+  doc.text(safe(`${t("pdfApprox")} ${fmt(convert(totals.setupTotal, nat, other), other)}`), RIGHT - 2, y + 1, { align:"right" });
+  y += 6;
+
+  /* Recurrente mensual */
+  if(totals.monthlyTotal > 0){
+    section(t("monthlySection"));
+    totals.selected.filter(ex => extraMonthly(ex) > 0).forEach(ex => row(extraLabels(ex).title, money(extraMonthly(ex))));
+    if(totals.maintMonthly > 0) row(`${t("maintLine")} - ${totals.maint.name[state.lang]}`, money(totals.maintMonthly));
+    row(`Total / ${t("perMonth")}`, money(totals.monthlyTotal), true);
+  }
+
+  /* Condiciones y nota */
+  section(t("termsTitle"));
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); muted();
+  t("terms").forEach(txt => {
+    const lines = doc.splitTextToSize("- " + safe(txt), RIGHT - MX - 4);
+    ensure(lines.length * 4.6 + 2);
+    doc.text(lines, MX + 2, y);
+    y += lines.length * 4.6 + 1.5;
+  });
+  y += 4;
+  const note = doc.splitTextToSize(safe(t("footerNote")), RIGHT - MX);
+  ensure(note.length * 4 + 4);
+  doc.setFontSize(8); doc.text(note, MX, y);
+
+  const clean = lead.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w]+/g, "_").replace(/^_+|_+$/g, "");
+  doc.save(`${t("pdfFile")}_${clean || "cliente"}.pdf`);
+}
+
+/* =====================================================================
+   11. EVENTOS (se registran una sola vez; las listas usan delegación)
+   ===================================================================== */
+function applyRecommendation(key){
+  const r = RECOMMENDATIONS[key];
+  if(!r) return;
+  state.reco = key;
+  state.productId = r.product;
+  state.extras = new Set(r.extras);
+  state.maintenanceId = r.maint;
+  state.pct = segmentPct(state.segment);
+  renderAll();
+  if(matchMedia("(max-width:1039px)").matches){          // en móvil el resumen queda abajo: llévalo a la vista
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    $("summary").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block:"start" });
+  }
+}
+
+function bindEvents(){
+  /* Controles del header */
+  $("countryToggle").addEventListener("click", e => {
+    const b = e.target.closest("[data-country]"); if(!b) return;
+    state.country = b.dataset.country;
+    state.currency = nativeCurrency();
+    savePrefs(); renderAll();
+  });
+  $("currencyToggle").addEventListener("click", e => {
+    const b = e.target.closest("[data-currency]"); if(!b) return;
+    state.currency = b.dataset.currency;
+    savePrefs(); renderAll();
+  });
+  $("langToggle").addEventListener("click", e => {
+    const b = e.target.closest("[data-lang]"); if(!b) return;
+    state.lang = b.dataset.lang;
+    savePrefs(); renderAll();
+  });
+  $("themeToggle").addEventListener("click", () => {
+    state.theme = currentTheme() === "dark" ? "light" : "dark";
+    savePrefs(); applyTheme(); renderAll();
+  });
+
+  /* Recomendador */
+  $("recoGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-reco]"); if(b) applyRecommendation(b.dataset.reco);
+  });
+  $("recoClose").addEventListener("click", () => { $("recoModule").hidden = true; });
+
+  /* Pasos 1–4 */
+  $("segmentGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-seg]"); if(!b) return;
+    state.segment = b.dataset.seg;
+    state.pct = segmentPct(state.segment);
+    renderAll();
+  });
+  $("productGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-prod]"); if(!b) return;
+    state.productId = b.dataset.prod; state.reco = null;
+    renderAll();
+  });
+  $("pctSlider").addEventListener("input", e => {
+    state.pct = parseInt(e.target.value, 10);
+    renderSlider();
+    renderSummary();
+  });
+  $("extrasContainer").addEventListener("click", e => {
+    const b = e.target.closest("[data-extra]"); if(!b) return;
+    const id = b.dataset.extra;
+    if(state.extras.has(id)) state.extras.delete(id); else state.extras.add(id);
+    state.reco = null;
+    renderAll();
+  });
+  $("maintGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-maint]"); if(!b) return;
+    state.maintenanceId = b.dataset.maint; state.reco = null;
+    renderAll();
+  });
+
+  /* Lead */
+  $("leadName").addEventListener("input", e => e.target.classList.remove("invalid"));
+  $("leadContact").addEventListener("input", e => e.target.classList.remove("invalid"));
+  $("btnWhatsapp").addEventListener("click", sendWhatsApp);
+  $("btnPdf").addEventListener("click", downloadPDF);
+  $("btnCopy").addEventListener("click", copySummary);
+
+  /* Si el usuario no eligió tema, seguir los cambios del sistema */
+  try{
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      if(!state.theme){ applyTheme(); renderAll(); }
+    });
+  }catch(e){}
+}
+
+/* =====================================================================
+   12. INIT
+   ===================================================================== */
+function init(){
+  loadPrefs();
+  applyTheme();
+  document.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = icon(el.dataset.icon); });
+  bindEvents();
+  renderAll();
+}
+init();
 
 })();
 </script>
