@@ -616,6 +616,7 @@ const T = {
       "Máximo dos rondas de cambios incluidas",
       "Soporte posterior y licencias de terceros se cobran aparte",
       "Garantía de 30 días sobre errores de implementación",
+      "Hosting y Dominio, se cotizan aparte y se pagan directamente al proveedor",
       "El alcance final queda por escrito antes de iniciar"
     ],
     countryCO:"Colombia", countryPA:"Panamá",
@@ -658,6 +659,7 @@ const T = {
       "Maximum two rounds of revisions included",
       "Ongoing support and third-party licenses billed separately",
       "30-day warranty covering implementation errors",
+      "Hosting and Domain are quoted separately and paid directly to the provider",
       "Final scope confirmed in writing before starting"
     ],
     countryCO:"Colombia", countryPA:"Panama",
@@ -1325,12 +1327,27 @@ function bindEvents(){
 /* =====================================================================
    12. INIT
    ===================================================================== */
+/* Tasa de cambio en vivo (si falla, se queda con CONFIG.exchangeRate = 3400) */
+function loadLiveRate(){
+  fetch("https://open.er-api.com/v6/latest/USD")
+    .then(r => r.json())
+    .then(d => {
+      const rate = d && d.rates && d.rates.COP;
+      if(rate && rate > 1000){          // validación básica
+        CONFIG.exchangeRate = Math.round(rate);
+        renderAll();
+      }
+    })
+    .catch(() => {});                    // sin internet o API caída: usa el valor fijo
+}
+
 function init(){
   loadPrefs();
   applyTheme();
   document.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = icon(el.dataset.icon); });
   bindEvents();
   renderAll();
+  loadLiveRate();
 }
 init();
 
